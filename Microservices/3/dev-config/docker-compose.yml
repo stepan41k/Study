@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  # Сервис заказов
+  order-service:
+    build:
+      context: ../order-service # Директория, где находится Dockerfile
+      dockerfile: Dockerfile.order
+    ports:
+      # Пробрасываем порт 8080 контейнера на порт 8080 хост-машины
+      - "8051:8051"
+    networks:
+      - microservices-net # Подключаем к общей сети
+    restart: always # Всегда перезапускать при падении
+
+  # Сервис оплаты
+  payment-service:
+    build:
+      context: ../payment-service
+      dockerfile: Dockerfile.payment
+    ports:
+      - "8052:8052"
+    networks:
+      - microservices-net
+    restart: always
+
+  # Сервис доставки
+  shipping-service:
+    build:
+      context: ../shipping-service
+      dockerfile: Dockerfile.shipping
+    ports:
+      - "8053:8053"
+    networks:
+      - microservices-net
+    restart: always
+
+networks:
+  microservices-net:
+    driver: bridge
