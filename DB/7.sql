@@ -71,39 +71,110 @@
                         WHERE n = 1;
 
 --             3.1.4. Добавьте в таблицу project поле shifr, при создании используйте check проверку с применением регулярного выражения (первые две буквы латинские, потом четыре цифры). Заполните таблицу значениями.
+                        -- Добавьте в таблицу project поле shifr с проверкой
+                    ALTER TABLE project ADD COLUMN shifr VARCHAR(6);
 
+                    ALTER TABLE project ADD CONSTRAINT check_shifr
+                    CHECK (shifr ~ '^[A-Z]{2}\d{4}$');
+
+                    UPDATE project SET shifr = 'PR' || LPAD(id::text, 4, '0') WHERE id <= 9999;
 --         3.2. Анализ статистики, создание индексов
 --             3.2.1. Напишите инструкцию для просмотра статистики любой таблицы (по примеру )
+                    SELECT * FROM pg_stat_user_tables WHERE relname = 'student';
 --             3.2.2. Выведите значение поля  из предыдущего запроса
+                    SELECT n_live_tup FROM pg_stat_user_tables WHERE relname = 'student';
 --             3.2.3. Выполните чтение таблицы
+                    SELECT * FROM student;
 --             3.2.4. Проверьте значение поля  после чтения таблицы
+                    SELECT seq_scan FROM pg_stat_user_tables WHERE relname = 'student';
 --             3.2.5. Создайте таблицу stattable на основании запроса на нахождения количества вставленных строк, удалённых строк (из статистики).
+                    CREATE TABLE stattable AS
+                    SELECT
+                        relname,
+                        n_tup_ins,
+                        n_tup_del
+                    FROM pg_stat_user_tables;
 --             3.2.6. Создайте индекс в таблице mentor – включающий поля lastname и name
+                    CREATE INDEX mentor_fullname_idx ON mentor (lastname, firstname);
 --             3.2.7. Создайте индекс в таблице project, включающий поле категория (по убыванию значения).
+                    ALTER TABLE project ADD COLUMN категория VARCHAR(50); -- Предполагается, что это поле нужно добавить
+                    CREATE INDEX project_kategoriya_desc_idx ON project (категория DESC);
 --             3.2.8. Напишите запрос к таблице project с применением индекса по категории.
+                    EXPLAIN SELECT * FROM project WHERE категория = 'Важная категория' ORDER BY категория DESC;
 --             3.2.9. Найдите количество сканирований по индексу, количество строк, отобранных при сканированиях по индексу.
+                    SELECT relname, idx_scan, idx_tup_fetch
+                    FROM pg_stat_user_tables
+                    WHERE relname = 'project';
 
 --         3.3. План выполнения запроса
 --             3.3.1. Постройте план запроса для нахождения данных о проектах указанной команды с сортировкой по дате начала работы над проектом
 --                 • EXPLAIN SQL-запрос
+                    EXPLAIN SELECT * FROM project
+                    WHERE idcommand = 1
+                    ORDER BY startdate;
 --             3.3.2. Просмотрите план запроса с применением F7 
 --             3.3.3. Просмотрите анализ плана 
 --             3.3.4. Просмотрите анализ плана запроса с применением 
 --             3.3.5. Нарисуйте абстрактное синтаксическое дерево разбора вашего запроса
+                    -- Абстрактное синтаксическое дерево (AST): Это древовидное представление синтаксической структуры запроса. Для приведенного выше запроса оно будет включать узлы для SELECT, FROM, WHERE и ORDER BY
 --             3.3.6. Нарисуйте дерево плана, какие узлы данного дерева? Что означают узлы дерева?
+                    Это дерево показывает, как PostgreSQL будет выполнять запрос. Узлы могут включать:
+                    Seq Scan: Последовательное сканирование таблицы.
+                    Index Scan: Сканирование с использованием индекса.
+                    Sort: Операция сортировки.
+                    Join: Операции соединения таблиц (например, Nested Loop, Hash Join, Merge Join).
 --             3.3.7. Создайте индекс в таблице student, включающий поле категория пользователя (по убыванию значения). Посмотрите план запроса с применением индекса.
+                    ALTER TABLE student ADD COLUMN категория_пользователя VARCHAR(50);
+                    CREATE INDEX student_kategoriya_desc_idx ON student (категория_пользователя DESC);
+                    EXPLAIN SELECT * FROM student ORDER BY категория_пользователя DESC;
 --             3.3.8. Создайте копию таблицы student. Удалите первичный ключ с поля id в ней.
+                    CREATE TABLE student_copy AS TABLE student;
+                    ALTER TABLE student_copy DROP CONSTRAINT student_copy_pkey; -- Название ключа может отличаться
 --             3.3.9. Запросите одного пользователя по его коду. Постройте план запроса, определите способ доступа.
+                    EXPLAIN SELECT * FROM student_copy WHERE id = 10; -- Будет выполнен Seq Scan
 --             3.3.10. Выберите всех студентов, которые в текущем году не выполнили ни одного проекта. Напишите два варианта запроса – через join и через подзапрос. Сравните планы исполнения этих запросов, сделайте выводы.
+                    EXPLAIN SELECT s.* FROM student s
+                    LEFT JOIN project p ON s.idcommand = p.idcommand
+                    WHERE p.id IS NULL;
+
+                    EXPLAIN SELECT * FROM student
+                    WHERE idcommand NOT IN (SELECT idcommand FROM project);
 --             3.3.11. Выведите список студентов и название команд. С помощью hints добейтесь всех трех способов исполнения соединения.
 --                 • Подсказка – указываем применить разные способы соединения
+                    SET enable_nestloop = off;
+                    EXPLAIN SELECT s.firstname, c.command FROM student s
+                    JOIN command c ON s.idcommand = c.id;
+                    RESET enable_nestloop;
 
 --         3.4. Расширенные запросы, курсоры
 --             3.4.1. Создайте преподготовленный запрос для выполнения запроса: найдите год рождения студента с указанным номером.
 --                 • Выполните запрос с разными значениями входного параметра.
+                    PREPARE get_student_birth_year (int) AS
+                        SELECT yearb FROM student WHERE id = $1;
+
+                    EXECUTE get_student_birth_year(1);
+                    EXECUTE get_student_birth_year(2);
 --                 • Постройте план запросов, сравните стоимость запроса без применения преподготовленного запроса и с применением.
+                    EXPLAIN ANALYZE SELECT yearb FROM student WHERE id = 1;
+                    EXPLAIN ANALYZE EXECUTE get_student_birth_year(1);
 --             3.4.2. Создайте преподготовленный запрос на удаление записи в таблице Project. Стартуйте транзакцию (begin). Выполните запрос с разными параметрами. Откатите транзакцию (rollback).
+                    PREPARE delete_project (int) AS
+                        DELETE FROM project WHERE id = $1;
+
+                    BEGIN;
+                    EXECUTE delete_project(5);
+                    EXECUTE delete_project(6);
+                    ROLLBACK;
 --             3.4.3. Создайте курсор для выборки данных из таблицы Project указанной команды.  Используя оператор FETCH NEXT FROM курсор, переберите записи из курсора, закройте курсор CLOSE курсор.
+                    BEGIN;
+                    DECLARE project_cursor CURSOR FOR
+                        SELECT projectname, startdate FROM project WHERE idcommand = 1;
+
+                    FETCH NEXT FROM project_cursor;
+                    FETCH NEXT FROM project_cursor;
+
+                    CLOSE project_cursor;
+                    COMMIT;
 
 --         3.5. Секционирование
 --             3.5.1. Создание таблицы с разбиением по значению поля даты
@@ -111,9 +182,87 @@
 --                 • Напишите запрос на вставку записей из таблицы Project в созданную таблицу. 
 --                 • Напишите запрос на выборку данных из каждой созданной секции, например, select * from Sec_Project partition_part1;
 --                 • Удалите одну из секций
+                    -- Создайте секционированную таблицу secproject
+                    CREATE TABLE secproject (
+                        id INT,
+                        projectname TEXT,
+                        startdate DATE
+                    ) PARTITION BY RANGE (startdate);
+
+                    -- Создайте секции
+                    CREATE TABLE secproject_2022 PARTITION OF secproject
+                        FOR VALUES FROM ('2022-01-01') TO ('2023-01-01');
+
+                    CREATE TABLE secproject_2023 PARTITION OF secproject
+                        FOR VALUES FROM ('2023-01-01') TO ('2024-01-01');
+
+                    CREATE TABLE secproject_2024 PARTITION OF secproject
+                        FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+
+                    -- Вставьте записи
+                    INSERT INTO secproject (id, projectname, startdate)
+                    SELECT id, projectname, startdate FROM project;
+
+                    -- Выборка из секций
+                    SELECT * FROM secproject_2023;
+
+                    -- Удаление секции
+                    ALTER TABLE secproject DETACH PARTITION secproject_2022;
+                    DROP TABLE secproject_2022;
 --             3.5.2. Создайте таблицу users с секционированием по диапазонам годов рождения, которая будет содержать данные студентов, распределенные по диапазонам годов рождения. Создайте секции для разных возрастных групп: студенты, родившиеся с 1998 по 2000, с 2001 по 2003 год, с 2004 по 2006 год. Проверьте распределение.
+                    -- Создайте таблицу users с секционированием
+                    CREATE TABLE users (
+                        id INT,
+                        lastname TEXT,
+                        firstname TEXT,
+                        yearb INT
+                    ) PARTITION BY RANGE (yearb);
+
+                    -- Создайте секции для разных возрастных групп
+                    CREATE TABLE users_1998_2000 PARTITION OF users
+                        FOR VALUES FROM (1998) TO (2001);
+
+                    CREATE TABLE users_2001_2003 PARTITION OF users
+                        FOR VALUES FROM (2001) TO (2004);
+
+                    CREATE TABLE users_2004_2006 PARTITION OF users
+                        FOR VALUES FROM (2004) TO (2007);
+
+                    -- Вставка данных
+                    INSERT INTO users (id, lastname, firstname, yearb)
+                    SELECT id, lastname, firstname, yearb FROM student;
+
+                    -- Проверка распределения
+                    SELECT tableoid::regclass, count(*) FROM users GROUP BY 1;
 
 --         3.6. Наследование и правила*
 --             3.6.1. Создайте таблицы-наследники по группам student3091, student3092, student3093.
---             3.6.2. Напишите правила для автоматического распределения студентов при вставке записей в таблицу student.
---             3.6.3. Протестируйте работу правил вставкой записей, проверьте полученный результат.
+                    CREATE TABLE student3091 () INHERITS (student);
+                    CREATE TABLE student3092 () INHERITS (student);
+                    CREATE TABLE student3093 () INHERITS (student);
+                    --             3.6.2. Напишите правила для автоматического распределения студентов при вставке записей в таблицу student.
+                                        CREATE OR REPLACE RULE student_insert_to_3091 AS
+                    ON INSERT TO student
+                    WHERE (NEW.groupname = '3091')
+                    DO INSTEAD
+                    INSERT INTO student3091 VALUES (NEW.*);
+
+                    CREATE OR REPLACE RULE student_insert_to_3092 AS
+                    ON INSERT TO student
+                    WHERE (NEW.groupname = '3092')
+                    DO INSTEAD
+                    INSERT INTO student3092 VALUES (NEW.*);
+
+                    CREATE OR REPLACE RULE student_insert_to_3093 AS
+                    ON INSERT TO student
+                    WHERE (NEW.groupname = '3093')
+                    DO INSTEAD
+                    INSERT INTO student3093 VALUES (NEW.*);
+                    --             3.6.3. Протестируйте работу правил вставкой записей, проверьте полученный результат.
+                                        INSERT INTO student (lastname, firstname, groupname) VALUES ('Тестов', 'Тест', '3091');
+                    INSERT INTO student (lastname, firstname, groupname) VALUES ('Проверкин', 'Проверка', '3092');
+
+                    -- Проверьте полученный результат
+                    SELECT * FROM student3091;
+                    SELECT * FROM student3092;
+                    SELECT * FROM student; -- Основная таблица должна быть пустой (для этих записей)
