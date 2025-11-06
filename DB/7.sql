@@ -155,8 +155,7 @@
                     EXPLAIN ANALYZE SELECT yearb FROM z5_student WHERE id = 1;
                     EXPLAIN ANALYZE EXECUTE get_student_birth_year(1);
 --             3.4.2. Создайте преподготовленный запрос на удаление записи в таблице Project. Стартуйте транзакцию (begin). Выполните запрос с разными параметрами. Откатите транзакцию (rollback).
-                    PREPARE delete_project (int) AS
-                        DELETE FROM z5_project WHERE id = $1;
+                    PREPARE delete_project (int) AS DELETE FROM z5_project WHERE id = $1;
 
                     BEGIN;
                     EXECUTE delete_project(5);
