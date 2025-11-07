@@ -41,7 +41,7 @@
                         INSERT INTO z5_tempdata (raw_data) VALUES
                         ('Иванов Иван, 1999, Категория А'),
                         ('Петров-Сидоров Петр, 2001, Категория Б'),
-                        ('Сергеева Анна-Мария, 2000'),
+                        ('Сергеева Анна, 2000'),
                         ('Сидорова Ольга, 2002, Категория В');
 --                 • Произведите поиск по данным всех фамилий.
                         SELECT regexp_match(raw_data, '^\w+(-\w+)?') FROM z5_tempdata;
@@ -114,19 +114,46 @@
 --             3.3.4. Просмотрите анализ плана запроса с применением 
 --             3.3.5. Нарисуйте абстрактное синтаксическое дерево разбора вашего запроса
                     -- Абстрактное синтаксическое дерево (AST): Это древовидное представление синтаксической структуры запроса. Для приведенного выше запроса оно будет включать узлы для SELECT, FROM, WHERE и ORDER BY
+                    
 --             3.3.6. Нарисуйте дерево плана, какие узлы данного дерева? Что означают узлы дерева?
                     -- Это дерево показывает, как PostgreSQL будет выполнять запрос. Узлы могут включать:
                     -- Seq Scan: Последовательное сканирование таблицы.
                     -- Index Scan: Сканирование с использованием индекса.
                     -- Sort: Операция сортировки.
                     -- Join: Операции соединения таблиц (например, Nested Loop, Hash Join, Merge Join).
+
+                    [SelectStmt]  -- Корневой узел: оператор SELECT
+                    |
+                    +-- [targetList] -> Что выбирать
+                    |       |
+                    |       +-- [A_Star] -> '*'
+                    |
+                    +-- [fromClause] -> Откуда
+                    |       |
+                    |       +-- [RangeVar] -> 'z5_project'
+                    |
+                    +-- [whereClause] -> Чем фильтровать
+                    |       |
+                    |       +-- [A_Expr: =] -> '='
+                    |           |
+                    |           +-- [ColumnRef] -> idcommand
+                    |           |
+                    |           +-- [A_Const: Integer] -> 1 
+                    |
+                    +-- [sortClause] -> Как сортировать
+                            |
+                            +-- [SortBy]
+                                |
+                                +-- [ColumnRef] -> startdate
+                                |
+                                +-- [SortByDir] -> DEFAULT (Направление сортировки: по умолчанию ASC)
 --             3.3.7. Создайте индекс в таблице student, включающий поле категория пользователя (по убыванию значения). Посмотрите план запроса с применением индекса.
                     ALTER TABLE z5_student ADD COLUMN категория_пользователя VARCHAR(50);
                     CREATE INDEX student_kategoriya_desc_idx ON z5_student (категория_пользователя DESC);
                     EXPLAIN SELECT * FROM z5_student ORDER BY категория_пользователя DESC;
 --             3.3.8. Создайте копию таблицы student. Удалите первичный ключ с поля id в ней.
                     CREATE TABLE student_copy AS TABLE z5_student;
-                    ALTER TABLE student_copy DROP CONSTRAINT student_copy_pkey; -- Название ключа может отличаться
+                    ALTER TABLE student_copy DROP CONSTRAINT student_copy_pkey;
 --             3.3.9. Запросите одного пользователя по его коду. Постройте план запроса, определите способ доступа.
                     EXPLAIN SELECT * FROM student_copy WHERE id = 10; -- Будет выполнен Seq Scan
 --             3.3.10. Выберите всех студентов, которые в текущем году не выполнили ни одного проекта. Напишите два варианта запроса – через join и через подзапрос. Сравните планы исполнения этих запросов, сделайте выводы.
@@ -200,7 +227,7 @@
                     SELECT id, projectname, startdate FROM z5_project;
 
                     -- Выборка из секций
-                    SELECT * FROM secproject_2023;
+                    SELECT * FROM secproject_2024;
 
                     -- Удаление секции
                     ALTER TABLE secproject DETACH PARTITION secproject_2022;
@@ -229,15 +256,15 @@
                     SELECT id, lastname, firstname, yearb FROM z5_student;
 
                     -- Проверка распределения
-                    SELECT tableoid::regclass, count(*) FROM z5_users GROUP BY 1;
+                    SELECT tableoid::regclass, count(*) FROM users GROUP BY 1;
 
 --         3.6. Наследование и правила*
 --             3.6.1. Создайте таблицы-наследники по группам student3091, student3092, student3093.
                     CREATE TABLE student3091 () INHERITS (z5_student);
                     CREATE TABLE student3092 () INHERITS (z5_student);
                     CREATE TABLE student3093 () INHERITS (z5_student);
-                    --             3.6.2. Напишите правила для автоматического распределения студентов при вставке записей в таблицу student.
-                                        CREATE OR REPLACE RULE student_insert_to_3091 AS
+--             3.6.2. Напишите правила для автоматического распределения студентов при вставке записей в таблицу student.
+                    CREATE OR REPLACE RULE student_insert_to_3091 AS
                     ON INSERT TO z5_student
                     WHERE (NEW.groupname = '3091')
                     DO INSTEAD
@@ -261,4 +288,4 @@
                     -- Проверьте полученный результат
                     SELECT * FROM student3091;
                     SELECT * FROM student3092;
-                    SELECT * FROM z5_student; -- Основная таблица должна быть пустой (для этих записей)
+                    SELECT * FROM z5_student; 
