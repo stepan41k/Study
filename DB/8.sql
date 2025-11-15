@@ -52,7 +52,6 @@
 
     CREATE VIEW max_prosr AS
         WITH late_projects_count AS (
-        -- Шаг 1: Считаем количество просроченных проектов для каждой команды
         SELECT s.id AS student_id, s.lastname, s.firstname,
             COUNT(p.id) FILTER (WHERE (p.enddate - p.startdate) > p.project_deadline) AS late_count
         FROM z5_student s
@@ -102,40 +101,15 @@
 -- 4.	Создание правил insert для представлений 
 -- 4.1.	Напишите правила insert/delete для представления student_command.
 
+    
+-- 4.1.1.	Для правила insert предусмотрите проверку существования команды в случае, если команды нет, требуется добавить команду и соответственно студента в команду, в случае существования команды – добавить только студента в команду с найденным номером.
+    
+-- 4.1.2.	Для правила delete предусмотрите проверку существования команды, в случае существования выполните удаление студентов данной команды.
     CREATE OR REPLACE RULE student_command_delete AS
     ON DELETE TO student_command
     DO INSTEAD
     DELETE FROM z5_student
-    WHERE id = OLD.student_id;
--- 4.1.1.	Для правила insert предусмотрите проверку существования команды в случае, если команды нет, требуется добавить команду и соответственно студента в команду, в случае существования команды – добавить только студента в команду с найденным номером.
-    
-    CREATE OR REPLACE FUNCTION student_command_insert_trigger()
-        RETURNS TRIGGER AS $$
-        DECLARE
-        new_command_id INT;
-        student_firstname TEXT;
-        student_lastname TEXT;
-        BEGIN
-        
-        student_firstname := SPLIT_PART(NEW.student_name, ' ', 1);
-        student_lastname := SPLIT_PART(NEW.student_name, ' ', 2);
-
-        SELECT id INTO new_command_id FROM command WHERE command = NEW.command_name;
-
-        IF NOT FOUND THEN
-            INSERT INTO command (command) VALUES (NEW.command_name) RETURNING id INTO new_command_id;
-        END IF;
-
-        INSERT INTO student (firstname, lastname, idcommand) VALUES (student_firstname, student_lastname, new_command_id);
-
-        RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-
-    CREATE TRIGGER student_command_insert
-    INSTEAD OF INSERT ON student_command
-    FOR EACH ROW EXECUTE FUNCTION student_command_insert_trigger();
--- 4.1.2.	Для правила delete предусмотрите проверку существования команды, в случае существования выполните удаление студентов данной команды.
+    WHERE id = OLD.student_id;  
 -- 4.2.	Создайте представление tek_project для выборки записей из таблицы project, в которых поле Дата_окончания работы над проектом больше текущей даты с указанием названия команды, реализующий проект. Напишите правило update для редактирования полей представления команда, дата окончания работы.
     CREATE VIEW tek_project AS
     SELECT p.projectname, p.enddate, c.command AS command_name, p.id AS project_id, c.id AS command_id
@@ -143,7 +117,7 @@
     JOIN z5_command c ON p.idcommand = c.id
     WHERE p.enddate > CURRENT_DATE;
 
--- Сообщение: CREATE VIEW
+-- message: CREATE VIEW
 
 -- Правило для обновления
     CREATE OR REPLACE RULE tek_project_update AS
@@ -229,11 +203,11 @@
 -- 6.1.	Создайте таблицы-наследники по группам student3091, student3092, student3093.
     CREATE TABLE student_is41 (
         CHECK (groupname = 'ИC-41')
-    ) INHERITS (student);
+    ) INHERITS (z5_student);
 
     CREATE TABLE student_pi31 (
         CHECK (groupname = 'ПИ-31')
-    ) INHERITS (student);
+    ) INHERITS (z5_student);
 
     CREATE TABLE student_kb21 (
         CHECK (groupname = 'КБ-21')
@@ -255,12 +229,12 @@
     END;
     $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER route_student_trigger
-BEFORE INSERT ON student
-FOR EACH ROW EXECUTE FUNCTION route_student_by_group();
+    CREATE TRIGGER route_student_trigger
+    BEFORE INSERT ON z5_student
+    FOR EACH ROW EXECUTE FUNCTION route_student_by_group();
 -- 6.3.	Протестируйте работу правил вставкой записей, проверьте полученный результат.
-    INSERT INTO z5_student (firstname, lastname, groupname) VALUES ('Анна', 'Иванова', 'ИC-41');
-    INSERT INTO z5_student (firstname, lastname, groupname) VALUES ('Петр', 'Петров', 'ПИ-31');
+    INSERT INTO z5_student (firstname, lastname, email, groupname) VALUES ('Анна', 'Иванова', 'example221@gmail.com', 'ИC-41');
+    INSERT INTO z5_student (firstname, lastname, email, groupname) VALUES ('Петр', 'Петров', 'bigbrain@gmail.com', 'ПИ-31');
 
     SELECT * FROM student_is41;
 
@@ -271,21 +245,25 @@ FOR EACH ROW EXECUTE FUNCTION route_student_by_group();
     SELECT * FROM ONLY z5_student;
 -- 7.	Привилегии доступа к данным
 -- 7.1.	Проверьте роли пользователям stud1 07&3886V&g, stud2 07&3886V&f
-    CREATE ROLE stud1 WITH LOGIN PASSWORD '07&3886V&g';
-    CREATE ROLE stud2 WITH LOGIN PASSWORD '07&3886V&f';
+
+    SELECT rolname, rolsuper, rolinherit, rolcreaterole, rolcreatedb, rolcanlogin
+    FROM pg_roles
+    WHERE rolname IN ('stud1', 'stud2');
 -- 7.2.	Задайте привилегии доступа (учтите, что разрешение чтение данных должно быть дано при всех других вариантах разрешений)
 -- 7.2.1.	Задайте привилегии доступа (учтите, что разрешение чтение данных должно быть дано при всех других вариантах разрешений)
-        GRANT SELECT ON project_student TO stud1;
+    GRANT SELECT ON project_student TO stud1;
 -- 7.2.2.	Пользователю stud1 дайте разрешение: 
 -- -	на чтение представления project_student.
 -- -	изменение данных в таблице student.
 -- -	разрешение на добавление и удаление данных в представлении project_student.
 -- -	чтение данных представления tek_project с возможностью передачи привилегии
 -- -	разрешение на добавление записей в таблицу project.
-    GRANT UPDATE ON student TO stud1;
+    GRANT UPDATE ON z5_student TO stud1;
+    GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
     GRANT INSERT, DELETE ON project_student TO stud1;
+    GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
     GRANT SELECT ON tek_project TO stud1 WITH GRANT OPTION;
-    GRANT INSERT ON project TO stud1;
+    GRANT INSERT ON z5_project TO stud1;
 -- 7.3.	Проверка привилегий
 -- -	Проверка привилегий на конкретную таблицу/представление (запросить привилегии для конкретного объекта (таблицы project , представления project_student). Напишите запрос к таблице information_schema.table_privileges. Добавьте условие выборки – нужная таблица или представление.
 -- -	Напишите запрос с применением функции STRING_AGG(поле, разделитель) для агрегации по полям пользователь имя таблицы с указанием привилегий.
@@ -315,7 +293,7 @@ FOR EACH ROW EXECUTE FUNCTION route_student_by_group();
     UPDATE z5_student SET email = 'stud2' WHERE id = 5;
 -- 8.3.	Включите защиту на уровне строк для таблицы student: 
 -- ALTER TABLE student ENABLE ROW LEVEL SECURITY
-    ALTER TABLE student ENABLE ROW LEVEL SECURITY;
+    ALTER TABLE z5_student ENABLE ROW LEVEL SECURITY;
 -- 8.4.	Создайте политику для отношения student, позволяющую только членам роли stud1 обращаться к строкам отношения и при этом только к своим (в таблице student должна быть запись о пользователе stud1.
     CREATE POLICY stud1_policy ON z5_student
     FOR ALL
