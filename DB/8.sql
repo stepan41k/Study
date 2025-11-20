@@ -57,16 +57,16 @@
         FROM z5_student s
         JOIN z5_project p ON s.idcommand = p.idcommand
         GROUP BY s.id, s.lastname, s.firstname
-    ),
-    ranked_students AS (
-        SELECT student_id, lastname, firstname, late_count,
-            DENSE_RANK() OVER (ORDER BY late_count DESC) as rnk
-        FROM late_projects_count
-    )
+        ),
+        ranked_students AS (
+            SELECT student_id, lastname, firstname, late_count,
+                DENSE_RANK() OVER (ORDER BY late_count DESC) as rnk
+            FROM late_projects_count
+        )
 
-    SELECT lastname, firstname, late_count
-    FROM ranked_students
-    WHERE rnk = 1;
+        SELECT lastname, firstname, late_count
+        FROM ranked_students
+        WHERE rnk = 1;
 
     SELECT * FROM max_prosr;
 
@@ -74,7 +74,6 @@
 -- 3.1.	Создайте таблицу student_command, которое бы показывало фамилию +имя_студента (как поле студент) и название команды, как поле команда и поле выплата как стоимость реализации проекта / количество студентов в команде, реализующих проект. Напишите правило select для представления.
     CREATE OR REPLACE VIEW student_command AS
         WITH command_student_count AS (
-        -- Подсчитываем количество студентов в каждой команде
         SELECT idcommand, COUNT(id) as student_count
         FROM z5_student
         GROUP BY idcommand
@@ -84,7 +83,7 @@
     JOIN z5_command c ON s.idcommand = c.id
     JOIN z5_project p ON c.id = p.idcommand
     JOIN command_student_count csc ON s.idcommand = csc.idcommand;
-    -- Примечание: Правила `ON SELECT` — устаревшая концепция. Представления сами по себе являются реализацией этого механизма.*
+    -- Правила `ON SELECT` — устаревшая концепция. Представления сами по себе являются реализацией этого механизма.*
 
 -- 3.2.	Создайте представление student_com, на основании представления student_command, для нахождения общего количества студентов в каждой команде.
     CREATE VIEW student_com AS
@@ -101,15 +100,14 @@
 -- 4.	Создание правил insert для представлений 
 -- 4.1.	Напишите правила insert/delete для представления student_command.
 
-    
 -- 4.1.1.	Для правила insert предусмотрите проверку существования команды в случае, если команды нет, требуется добавить команду и соответственно студента в команду, в случае существования команды – добавить только студента в команду с найденным номером.
     
 -- 4.1.2.	Для правила delete предусмотрите проверку существования команды, в случае существования выполните удаление студентов данной команды.
-    CREATE OR REPLACE RULE student_command_delete AS
+    CREATE OR REPLACE RULE student_command_delete_rule AS
     ON DELETE TO student_command
     DO INSTEAD
-    DELETE FROM z5_student
-    WHERE id = OLD.student_id;  
+        DELETE FROM student
+        WHERE id = OLD.student_id;
 -- 4.2.	Создайте представление tek_project для выборки записей из таблицы project, в которых поле Дата_окончания работы над проектом больше текущей даты с указанием названия команды, реализующий проект. Напишите правило update для редактирования полей представления команда, дата окончания работы.
     CREATE VIEW tek_project AS
     SELECT p.projectname, p.enddate, c.command AS command_name, p.id AS project_id, c.id AS command_id
@@ -117,9 +115,6 @@
     JOIN z5_command c ON p.idcommand = c.id
     WHERE p.enddate > CURRENT_DATE;
 
--- message: CREATE VIEW
-
--- Правило для обновления
     CREATE OR REPLACE RULE tek_project_update AS
     ON UPDATE TO tek_project
     DO INSTEAD (
