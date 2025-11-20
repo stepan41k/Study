@@ -106,7 +106,7 @@
     CREATE OR REPLACE RULE student_command_delete_rule AS
     ON DELETE TO student_command
     DO INSTEAD
-        DELETE FROM student
+        DELETE FROM z5_student
         WHERE id = OLD.student_id;
 -- 4.2.	Создайте представление tek_project для выборки записей из таблицы project, в которых поле Дата_окончания работы над проектом больше текущей даты с указанием названия команды, реализующий проект. Напишите правило update для редактирования полей представления команда, дата окончания работы.
     CREATE VIEW tek_project AS
@@ -229,6 +229,7 @@
     FOR EACH ROW EXECUTE FUNCTION route_student_by_group();
 -- 6.3.	Протестируйте работу правил вставкой записей, проверьте полученный результат.
     INSERT INTO z5_student (firstname, lastname, email, groupname) VALUES ('Анна', 'Иванова', 'example221@gmail.com', 'ИC-41');
+
     INSERT INTO z5_student (firstname, lastname, email, groupname) VALUES ('Петр', 'Петров', 'bigbrain@gmail.com', 'ПИ-31');
 
     SELECT * FROM student_is41;
@@ -259,6 +260,7 @@
     GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
     GRANT SELECT ON tek_project TO stud1 WITH GRANT OPTION;
     GRANT INSERT ON z5_project TO stud1;
+    GRANT USAGE ON SEQUENCE z5_project_id_seq TO stud1;
 -- 7.3.	Проверка привилегий
 -- -	Проверка привилегий на конкретную таблицу/представление (запросить привилегии для конкретного объекта (таблицы project , представления project_student). Напишите запрос к таблице information_schema.table_privileges. Добавьте условие выборки – нужная таблица или представление.
 -- -	Напишите запрос с применением функции STRING_AGG(поле, разделитель) для агрегации по полям пользователь имя таблицы с указанием привилегий.
