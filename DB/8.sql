@@ -70,99 +70,107 @@
 
     SELECT * FROM max_prosr;
 
+-- 2.6. Создайте представление, которое находит агрегированную информацию по категориям студентов – по каждой категории найти количество и средний возраст студентов, вывести также общий итог по категории.
+
+    CREATE VIEW student_category_stats AS
+        SELECT COALESCE(категория, 'Общий итог') AS категория, COUNT(*) AS количество, AVG(age) AS средний_возраст
+        FROM z5_student
+        GROUP BY ROLLUP(категория);
+
     -- 3. Работа с системными представлениями
     --     3.1. Получите информацию о таблицах в вашей схеме, используя представление information_schema.tables, выведите отсортированные данные.
-        SELECT table_name, table_schema, table_type
-        FROM information_schema.tables
-        ORDER BY table_name;
+            SELECT table_name, table_schema, table_type
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+            ORDER BY table_name;
     --     3.2. Используя представление information_schema.columns, получите полную информацию о столбцах таблицы student
-        SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
-        FROM information_schema.columns
-        WHERE table_name = 'z5_student';
+            SELECT column_name, data_type, character_maximum_length, is_nullable, column_default
+            FROM information_schema.columns
+            WHERE table_name = 'z5_student';
     --     3.3. Используя представление information_schema.table_constraints, найдите все ограничения для таблицы project с указанием названия ограничения и его типа. Найдите количество ограничений по каждому типу.
-        SELECT constraint_name, constraint_type
-        FROM information_schema.table_constraints
-        WHERE table_name = 'z5_project';
+            SELECT constraint_name, constraint_type
+            FROM information_schema.table_constraints
+            WHERE table_name = 'z5_project';
 
-        -- Количество ограничений по каждому типу
-        SELECT constraint_type, COUNT(*) as count
-        FROM information_schema.table_constraints
-        WHERE table_name = 'z5_project'
-        GROUP BY constraint_type;
+            -- Количество ограничений по каждому типу
+            SELECT constraint_type, COUNT(*) as count
+            FROM information_schema.table_constraints
+            WHERE table_name = 'z5_project'
+            GROUP BY constraint_type;
     --     3.4. Для внешних ключей получите дополнительную информацию из information_schema.key_column_usage – таблицу и столбца, на который ссылается внешний ключ.
-        SELECT tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name
-        FROM information_schema.table_constraints AS tc
-        JOIN information_schema.key_column_usage AS kcu
-        ON tc.constraint_name = kcu.constraint_name
-        JOIN information_schema.constraint_column_usage AS ccu
-        ON ccu.constraint_name = tc.constraint_name
-        WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'z5_project';
+            SELECT tc.constraint_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name
+            FROM information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+            ON tc.constraint_name = kcu.constraint_name
+            JOIN information_schema.constraint_column_usage AS ccu
+            ON ccu.constraint_name = tc.constraint_name
+            WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name = 'z5_project';
     --     3.5. Создайте представление database_structure_report, которое будет содержать сводную информацию обо всех таблицах вашей схемы: название таблицы, количество столбцов, количество ограничений, количество записей в таблице, дата последнего изменения.
-        CREATE OR REPLACE VIEW database_structure_report AS
-        SELECT 
-            t.table_name,
-            (SELECT COUNT(*) FROM information_schema.columns AS c WHERE c.table_name = t.table_name) AS column_count,
-            (SELECT COUNT(*) FROM information_schema.table_constraints AS tc WHERE tc.table_name = t.table_name) AS constraint_count,
-            reltuples::BIGINT AS row_count
-        FROM information_schema.tables t
-        JOIN pg_class ON t.table_name = pg_class.relname
-        WHERE t.table_schema = 'public' AND t.table_type = 'BASE TABLE'
-        ORDER BY t.table_name;
+            CREATE OR REPLACE VIEW database_structure_report AS
+            SELECT
+                t.table_name,
+                (SELECT COUNT(*) FROM information_schema.columns AS c WHERE c.table_name = t.table_name) AS column_count,
+                (SELECT COUNT(*) FROM information_schema.table_constraints AS tc WHERE tc.table_name = t.table_name) AS constraint_count,
+                reltuples::BIGINT AS row_count
+            FROM information_schema.tables t
+            JOIN pg_class ON t.table_name = pg_class.relname
+            WHERE t.table_schema = 'public' AND t.table_type = 'BASE TABLE'
+            ORDER BY t.table_name;
 
-        SELECT * FROM database_structure_report;
+            -- Просмотр отчета
+            SELECT * FROM database_structure_report;
     --     3.6. Найдите информацию о добавленных полях (1го задания) и их атрибутах.
-        SELECT column_name, data_type, column_default, is_nullable
-        FROM information_schema.columns
-        WHERE table_name IN ('z5_project', 'z5_student')
-        AND column_name IN ('about', 'категория', 'result', 'project_deadline');
+            SELECT column_name, data_type, column_default, is_nullable
+            FROM information_schema.columns
+            WHERE table_name IN ('z5_project', 'z5_student')
+            AND column_name IN ('about', 'категория', 'result', 'project_deadline');
+
 -- 4.	Создание правил select для представлений
 -- 4.1.	Создайте таблицу student_command, которое бы показывало фамилию +имя_студента (как поле студент) и название команды, как поле команда и поле выплата как стоимость реализации проекта / количество студентов в команде, реализующих проект. Напишите правило select для представления.
-    CREATE OR REPLACE VIEW student_command AS
-        WITH command_student_count AS (
-        SELECT idcommand, COUNT(id) as student_count
-        FROM z5_student
-        GROUP BY idcommand
-        )
-        SELECT s.firstname || ' ' || s.lastname AS student_name, c.command AS command_name, p.projectname, p.price / csc.student_count AS payout, s.id AS student_id, c.id AS command_id
-        FROM z5_student s
-        JOIN z5_command c ON s.idcommand = c.id
-        JOIN z5_project p ON c.id = p.idcommand
-        JOIN command_student_count csc ON s.idcommand = csc.idcommand;
+        CREATE VIEW student_command AS
+        SELECT
+            s.firstname || ' ' || s.lastname AS студент,
+            c.command AS команда,
+            (p.price / (SELECT COUNT(*) FROM student WHERE idcommand = s.idcommand)) AS выплата
+        FROM student s
+        JOIN command c ON s.idcommand = c.id
+        JOIN project p ON c.id = p.idcommand;
     -- Правила `ON SELECT` — устаревшая концепция. Представления сами по себе являются реализацией этого механизма.*
-
-    -- CREATE OR REPLACE RULE student_command_select AS
-    -- ON SELECT TO student_command
-    -- DO INSTEAD
-    -- SELECT
-    --     s.firstname || ' ' || s.lastname AS студент,
-    --     c.command AS команда,
-    --     (p.price / (SELECT COUNT(*) FROM z5_student WHERE idcommand = s.idcommand)) AS выплата
-    -- FROM z5_student s
-    -- JOIN z5_command c ON s.idcommand = c.id
-    -- JOIN z5_project p ON c.id = p.idcommand;
+        CREATE OR REPLACE RULE student_command_select AS
+        ON SELECT TO student_command
+        DO INSTEAD
+            SELECT
+                s.firstname || ' ' || s.lastname AS студент,
+                c.command AS команда,
+                (p.price / (SELECT COUNT(*) FROM student WHERE idcommand = s.idcommand)) AS выплата
+            FROM student s
+            JOIN command c ON s.idcommand = c.id
+            JOIN project p ON c.id = p.idcommand;
 -- 4.2.	Создайте представление student_com, на основании представления student_command, для нахождения общего количества студентов в каждой команде.
-    CREATE VIEW student_com AS
-    SELECT command_name,
-    COUNT(DISTINCT student_name) AS total_students
-    FROM student_command
-    GROUP BY command_name;
+        CREATE VIEW student_com AS
+        SELECT command_name,
+        COUNT(DISTINCT student_name) AS total_students
+        FROM student_command
+        GROUP BY command_name;
 -- 4.3.	Создайте представление task_project, на основании представления student_command, для нахождения итоговой и средней выплаты по каждой команде.
-    CREATE VIEW payout_by_command AS
-    SELECT command_name, SUM(payout) AS total_payout, AVG(payout) AS average_payout
-    FROM student_command
-    GROUP BY command_name;
+        CREATE VIEW payout_by_command AS
+        SELECT command_name, SUM(payout) AS total_payout, AVG(payout) AS average_payout
+        FROM student_command
+        GROUP BY command_name;
 
 -- 5.	Создание правил insert для представлений 
 -- 5.1.	Напишите правила insert/delete для представления student_command.
+
 -- 5.1.1.	Для правила insert предусмотрите проверку существования команды в случае, если команды нет, требуется добавить команду и соответственно студента в команду, в случае существования команды – добавить только студента в команду с найденным номером.
     CREATE OR REPLACE FUNCTION fn_student_command_insert()
         RETURNS TRIGGER AS $$
-        DECLARE v_command_id INT;
+        DECLARE
+            v_command_id INT;
         BEGIN
             SELECT id INTO v_command_id FROM command WHERE command = NEW.command;
 
             IF NOT FOUND THEN
-                INSERT INTO z5_command (command)
+                INSERT INTO command (command)
                 VALUES (NEW.command)
                 RETURNING id INTO v_command_id;
             END IF;
@@ -178,12 +186,13 @@
     INSTEAD OF INSERT ON student_command_modifiable
     FOR EACH ROW
     EXECUTE FUNCTION fn_student_command_insert();
+
 -- 5.1.2.	Для правила delete предусмотрите проверку существования команды, в случае существования выполните удаление студентов данной команды.
     CREATE OR REPLACE RULE student_command_delete_rule AS
     ON DELETE TO student_command
     DO INSTEAD
-    DELETE FROM z5_student
-    WHERE id = OLD.student_id;
+        DELETE FROM z5_student
+        WHERE id = OLD.student_id;
 -- 5.2.	Создайте представление tek_project для выборки записей из таблицы project, в которых поле Дата_окончания работы над проектом больше текущей даты с указанием названия команды, реализующий проект. Напишите правило update для редактирования полей представления команда, дата окончания работы.
     CREATE VIEW tek_project AS
     SELECT p.projectname, p.enddate, c.command AS command_name, p.id AS project_id, c.id AS command_id
@@ -194,8 +203,8 @@
     CREATE OR REPLACE RULE tek_project_update AS
     ON UPDATE TO tek_project
     DO INSTEAD (
-    UPDATE z5_command SET command = NEW.command_name WHERE id = OLD.command_id;
-    UPDATE z5_project SET enddate = NEW.enddate WHERE id = OLD.project_id;
+        UPDATE z5_command SET command = NEW.command_name WHERE id = OLD.command_id;
+        UPDATE z5_project SET enddate = NEW.enddate WHERE id = OLD.project_id;
     );
 -- 5.3.	Создание логов
 -- 5.3.1.	Создайте таблицу log_student, включающую поля код записи, пользователь, текущая дата, операция

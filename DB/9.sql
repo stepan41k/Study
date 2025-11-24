@@ -10,21 +10,30 @@ WHERE
 --         1.2. Задайте привилегии доступа
 --             1.2.1. Задайте привилегии доступа (учтите, что разрешение доступа к схеме должно быть дано пользователю, также учтите необходимость выдачу разрешений на необходимые сопутствующие объекты)
 -- Пользователю stud1 дайте разрешение: 
--- GRANT USAGE ON SCHEMA public TO stud1;
+GRANT USAGE ON SCHEMA public TO stud1,
+stud2;
+
 -- REVOKE USAGE ON SCHEMA public FROM stud1;
---             ▪ на чтение представления project_student
+--             ▪ на чтение представления project_student, добавление и удаление данных в представлении project_student;
 GRANT
 SELECT
-    ON TABLE project_student TO stud1;
+,
+    INSERT,
+    DELETE ON TABLE project_student TO stud1;
+
+GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
+
+GRANT USAGE ON SEQUENCE z5_project_id_seq TO stud1;
 
 --             ▪ изменение данных в таблице student;
 GRANT
 UPDATE ON TABLE z5_student TO stud1;
 
-GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
+GRANT
+SELECT
+    ON TABLE z5_student TO stud1;
 
--- select * from raspopov_si.z5_student;
-GRANT USAGE ON SCHEMA z5_student_schema TO stud1;
+GRANT USAGE ON SEQUENCE z5_student_id_seq TO stud1;
 
 --             ▪ чтение данных представления tek_project с возможностью передачи привилегии;
 GRANT
@@ -79,7 +88,7 @@ FROM
     information_schema.table_privileges
 WHERE
     grantee = 'stud1'
-    AND table_name IN ('z5_project', 'z5_student', 'project_student');
+    AND table_name IN ('z5_project', 'project_student');
 
 SELECT
     grantee,
@@ -91,7 +100,7 @@ FROM
     information_schema.column_privileges
 WHERE
     grantee = 'stud1'
-    AND table_name IN ('z5_project', 'z5_student', 'project_student');
+    AND table_name IN ('z5_project', 'project_student');
 
 --     • Напишите запрос с применением функции STRING_AGG(поле, разделитель) для агрегации по полям пользователь имя таблицы с указанием привилегий.
 SELECT
@@ -113,13 +122,13 @@ UPDATE z5_student
 SET
     lastname = 'stud1'
 WHERE
-    id = 1;
+    student_id = 1;
 
 UPDATE z5_student
 SET
     lastname = 'stud2'
 WHERE
-    id = 2;
+    student_id = 2;
 
 --         2.3. Включите защиту на уровне строк для таблицы student: 
 ALTER TABLE z5_student ENABLE ROW LEVEL SECURITY;
@@ -127,51 +136,13 @@ ALTER TABLE z5_student ENABLE ROW LEVEL SECURITY;
 --         2.4. Создайте политику для отношения student, позволяющую только членам роли stud1 обращаться к строкам отношения и при этом только к своим (в таблице student должна быть запись о пользователе stud1).
 CREATE POLICY student_stud1_policy ON z5_student FOR ALL TO stud1 USING (lastname = current_user);
 
-SELECT
-    *
-FROM
-    z5_student;
-
-UPDATE z5_student
-SET
-    firstname = 'Hacked'
-WHERE
-    lastname = 'stud2';
-
 --         2.5. Создайте политику, чтобы stud2 мог видеть и добавлять любые строки.
 CREATE POLICY student_stud2_policy ON z5_student FOR ALL TO stud2 USING (true);
 
-SELECT
-    *
-FROM
-    z5_student;
-
-INSERT INTO
-    z5_student (lastname, firstname, email)
-VALUES
-    ('newuser', 'Test', 'test@mail.ru');
-
 --         2.6. Напишите запрос на создание политики, которая позволит всем пользователям видеть все строки в таблице users, но менять только свою собственную.
-CREATE POLICY users_policy ON users FOR ALL USING (true)
+CREATE POLICY users_policy ON z5_users FOR ALL USING (true)
 WITH
-    CHECK (lastname = current_user);
-
-SELECT
-    *
-FROM
-    users;
-
-UPDATE users
-SET
-    email = 'new_email@stud1.com'
-WHERE
-    lastname = 'stud1';
-
-UPDATE users
-SET
-    email = 'hacked@stud2.com'
-WHERE
-    lastname = 'stud2';
+    CHECK (username = current_user);
 
 --         2.7. Проверьте созданные политики доступа (напишем запрос по примеру п.1.3 для агрегации политик по tablename с обращением к nаблице pg_policies).
 SELECT
@@ -179,43 +150,32 @@ SELECT
     tablename,
     policyname,
     permissive,
-    roles,
     cmd,
     qual,
     with_check
 FROM
     pg_policies
 WHERE
-    schemaname = 'raspopov_si';
+    tablename = 'z5_student';
 
 --         2.8. Создайте политику менторы видят все проекты своей команды. Проверьте работу политики.
-CREATE POLICY mentor_see_team_projects ON z5_project FOR
+CREATE POLICY mentor_team_projects_policy ON z5_project FOR
 SELECT
-    TO public USING (
-        idcommand IN (
+    USING (
+        project_id IN (
             SELECT
-                m.idcommand
+                project_id
             FROM
-                z5_mentor m
+                teams
             WHERE
-                m.lastname = current_user
+                mentor_username = current_user
         )
     );
-
-SELECT
-    *
-FROM
-    z5_project;
 
 --         2.9. Создайте политику для ограничения доступа к полю result в зависимости от категории – просматривать может пользователь stud2.
 CREATE POLICY result_access_policy ON z5_project FOR
 SELECT
     TO stud2 USING (category = 'some_category');
-
-SELECT
-    *
-FROM
-    z5_project;
 
 --     3. Аудит доступа
 --         3.1. Создайте таблицу аудита audit (id, username, action, table_name, timestamp)
