@@ -1,6 +1,17 @@
 -- При выполнении задания не забудьте проверять работу процедур и функций. Сделайте отладку 1 процедуры и 2-х функций по Вашему выбору. 
 --         4.1. Процедуры и функции без привязки к базе данных
 --             4.1.1. Напишите процедуру сurrent_time, которая выводит текущее время n раз, где n - параметр, задаваемый пользователем.
+                CREATE OR REPLACE PROCEDURE print_current_time(n INT)
+                LANGUAGE plpgsql
+                AS $$
+                DECLARE 
+                    i INT;
+                BEGIN
+                    FOR i IN 1..n LOOP
+                        RAISE NOTICE 'Текущее время (%): %', i, now()::time;
+                    END LOOP;
+                END;
+                $$;
 --             4.1.2. Создайте хранимую процедуру cost, которая по введённой цене товара и его количеству вычислит сумму к выдаче. 
 --             4.1.3. Напишите функцию, которая в зависимости от введенного значения переменной cur вычислит стоимость товара в долларах, если переменная cur=0 и в рублях, если переменная cur=1.
 --         4.2. Хранимые процедуры выборки данных
@@ -35,54 +46,3 @@
 --                 • если ментор взял больше 5 команд+100 к рейтингу
 --             4.5.2. Создайте хранимую функцию, возвращающую таблицу данных о студентах и проектах, которые они взяли в указанный период.
 --             4.5.3. Выведите информацию о студентах группы с определённым номером, упорядоченных в порядке убывания года рождения
-SELECT
-    s.first_name,
-    s.last_name,
-    s.email
-FROM
-    students s
-    JOIN group_enrollments ge ON s.student_id = ge.student_id
-    JOIN groups g ON ge.group_id = g.group_id
-WHERE
-    g.group_name = 'English-A1-Morning';
-
-SELECT
-    g.group_name,
-    COUNT(ge.student_id) as student_count
-FROM
-    groups g
-    LEFT JOIN group_enrollments ge ON g.group_id = ge.group_id
-WHERE
-    g.is_active = TRUE
-GROUP BY
-    g.group_id,
-    g.group_name;
-
-SELECT
-    l.start_time,
-    l.room_number,
-    g.group_name,
-    c.title AS course_title
-FROM
-    lessons l
-    JOIN groups g ON l.group_id = g.group_id
-    JOIN courses c ON g.course_id = c.course_id
-    JOIN teachers t ON g.teacher_id = t.teacher_id
-WHERE
-    t.first_name = 'Viktor'
-    AND t.last_name = 'Petrov'
-    AND DATE (l.start_time) = CURRENT_DATE
-ORDER BY
-    l.start_time;
-
-SELECT
-    s.first_name,
-    s.last_name,
-    ast.name as status_reason
-FROM
-    attendance a
-    JOIN students s ON a.student_id = s.student_id
-    JOIN attendance_statuses ast ON a.status_id = ast.status_id
-WHERE
-    a.lesson_id = 105
-    AND ast.name IN ('Absent', 'Excused');

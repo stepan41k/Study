@@ -7,7 +7,7 @@
 --                 • v_title varchar(20) := ' Наушники JBL T110'
                     DO $$
                     DECLARE
-                        v_pr NUMERIC(8, 2) := 899;
+                        v_pr NUMERIC(8, 0) := 899;
                         v_qu NUMERIC(3, 0) := 5;
                         v_title VARCHAR(20) := ' Наушники JBL T110';
                         v_total NUMERIC(10, 2);
@@ -71,7 +71,6 @@
                         RAISE NOTICE '--- Внешний блок (Отец) ---';
                         RAISE NOTICE 'Текущая дата (v_date): %', v_date;
 
-                        -- Внутренний блок с меткой child_block
                         <<child_block>>
                         DECLARE
                             v_name_child VARCHAR(50) := 'Петр Иванов';
@@ -79,10 +78,8 @@
                             v_age_c INT;
                             v_age_v INT;
                         BEGIN
-                            -- Вычисление возраста ребенка
                             v_age_c := DATE_PART('year', AGE(v_date, v_dt_bt_child));
 
-                            -- Вычисление возраста отца на момент рождения ребенка
                             v_age_v := DATE_PART('year', AGE(v_dt_bt_child, v_dt_bt_father));
 
                             RAISE NOTICE '--- Внутренний блок (Ребенок) ---';
@@ -104,36 +101,36 @@
 --                 • Стоимость реализации проекта
                     DO $$
                     DECLARE
-                        v_mentor_id INT := 1; -- ID ментора для примера
-                        v_m_surname mentor.surname%TYPE;
-                        v_m_first_name mentor.first_name%TYPE;
-                        v_m_patronymic mentor.patronymic%TYPE;
-                        v_p_code project.project_code%TYPE;
-                        v_p_title project.title%TYPE;
-                        v_p_year project.implementation_year%TYPE;
-                        v_p_month project.implementation_month%TYPE;
-                        v_p_cost project.cost%TYPE;
+                        v_m_last z5_mentor.lastname%TYPE;
+                        v_m_first z5_mentor.firstname%TYPE;
+                        v_m_middle text := 'Иванович'; -- Нет поля отчество в БД
+                        v_p_id z5_project.id%TYPE;
+                        v_p_name z5_project.projectname%TYPE;
+                        v_p_year int;
+                        v_p_month int;
+                        v_p_price z5_project.price%TYPE;
                     BEGIN
-                        SELECT
-                            m.surname, m.first_name, m.patronymic,
-                            p.project_code, p.title, p.implementation_year, p.implementation_month, p.cost
-                        INTO
-                            v_m_surname, v_m_first_name, v_m_patronymic,
-                            v_p_code, v_p_title, v_p_year, v_p_month, v_p_cost
-                        FROM mentor m
-                        JOIN project p ON m.mentor_id = p.mentor_id
-                        WHERE m.mentor_id = v_mentor_id
-                        LIMIT 1; -- Берем один проект для примера
+                        SELECT 
+                            m.lastname, m.firstname, 
+                            p.id, p.projectname, 
+                            EXTRACT(YEAR FROM p.startdate), 
+                            EXTRACT(MONTH FROM p.startdate), 
+                            p.price
+                        INTO 
+                            v_m_last, v_m_first, 
+                            v_p_id, v_p_name, 
+                            v_p_year, v_p_month, 
+                            v_p_price
+                        FROM z5_project p
+                        JOIN z5_command c ON p.idcommand = c.id
+                        JOIN z5_mentor m ON m.idcommand = c.id
+                        LIMIT 1;
 
-                        RAISE NOTICE 'Ментор: % % %, Проект: шифр %, название %, год реализации %, месяц реализации %, стоимость реализации %',
-                            v_m_surname, v_m_first_name, v_m_patronymic,
-                            v_p_code, v_p_title, v_p_year, v_p_month, v_p_cost;
-
+                        RAISE NOTICE 'Ментор % % %, Проект %, %, год реализации %, месяц реализации %, стоимость реализации %',
+                            v_m_last, v_m_first, v_m_middle, v_p_id, v_p_name, v_p_year, v_p_month, v_p_price;
                     EXCEPTION
                         WHEN NO_DATA_FOUND THEN
-                            RAISE NOTICE 'Ментор или проект не найдены для ID: %', v_mentor_id;
-                        WHEN OTHERS THEN
-                            RAISE EXCEPTION 'Ошибка в 4.3.1: %', SQLERRM;
+                            RAISE NOTICE 'Данные не найдены';
                     END $$;
 -- Используя оператор SELECT присвоить заданным переменным значения и вывести на экран с именами полей на русском языке, например в таком формате: Ментов Фамилия Имя Отчество, Проект шифр, название, год реализации, месяц реализации, стоимость реализации
 --             4.3.2. Объявить и инициализировать переменные с привязкой к полям
@@ -143,99 +140,65 @@
 -- Используя эти переменные, создать запрос, который получит стоимость заданной тематики. Вывести суммарную стоимость, а также количество проектов.
                     DO $$
                     DECLARE
-                        v_theme project.theme%TYPE := 'IT';
-                        v_total_cost NUMERIC(10, 2) := 0;
-                        v_project_count BIGINT;
-                        v_daily_cost_sum NUMERIC(10, 2) := 0; -- Сумма суточных стоимостей всех проектов
-                        r_project RECORD;
+                        v_topic z5_project.project_type%TYPE := 'IT';
+                        v_total_price z5_project.price%TYPE;
+                        v_day_cost numeric(10,2);
+                        v_count int;
+                        
+                        v_one_price z5_project.price%TYPE;
+                        v_start date;
+                        v_end date;
                     BEGIN
-                        -- DEBUG1: Начало выполнения для тематики
-                        RAISE NOTICE 'DEBUG1: Начало выполнения. Тематика: %', v_theme;
+                        SELECT sum(price), count(*)
+                        INTO v_total_price, v_count
+                        FROM z5_project
+                        WHERE project_type = v_topic;
+                        
+                        RAISE NOTICE 'Тематика: %, Всего проектов: %, Общая стоимость: %', v_topic, v_count, v_total_price;
 
-                        -- Использование цикла (неявный курсор) для вычисления суммарной суточной стоимости
-                        FOR r_project IN
-                            SELECT cost, (end_date - start_date) AS duration
-                            FROM project
-                            WHERE theme = v_theme AND end_date IS NOT NULL AND (end_date - start_date) > 0
-                        LOOP
-                            -- DEBUG1: Проект
-                            RAISE NOTICE 'DEBUG1: Обработка проекта. Стоимость: %, Длительность: % дней', r_project.cost, r_project.duration;
-
-                            v_total_cost := v_total_cost + r_project.cost;
-                            -- Суточная стоимость этого проекта (cost / duration)
-                            v_daily_cost_sum := v_daily_cost_sum + (r_project.cost / r_project.duration);
-                        END LOOP;
-
-                        -- Получение общего количества проектов
-                        SELECT COUNT(*) INTO v_project_count FROM project WHERE theme = v_theme;
-
-                        RAISE NOTICE 'Тематика проекта: %', v_theme;
-                        RAISE NOTICE 'Количество проектов: %', v_project_count;
-                        RAISE NOTICE 'Суммарная стоимость: %', v_total_cost;
-                        -- Вывод с 2 знаками после запятой
-                        RAISE NOTICE 'Суммарная суточная стоимость (с 2 знаками): %', TO_CHAR(v_daily_cost_sum, 'FM9999999.00');
-
-                    EXCEPTION
-                        WHEN NO_DATA_FOUND THEN
-                            RAISE NOTICE 'Проекты по тематике "%" не найдены.', v_theme;
-                        WHEN division_by_zero THEN
-                            RAISE NOTICE 'Ошибка: Найдена реализация с нулевой длительностью.';
-                        WHEN OTHERS THEN
-                            RAISE EXCEPTION 'Ошибка в 4.3.2 (debug1): %', SQLERRM;
+                        SELECT price, startdate, enddate INTO v_one_price, v_start, v_end
+                        FROM z5_project WHERE project_type = v_topic LIMIT 1;
+                        
+                        IF v_one_price IS NOT NULL AND v_end > v_start THEN
+                            v_day_cost := v_one_price / (v_end - v_start);
+                            RAISE NOTICE 'Суточная стоимость (одного из проектов): %', v_day_cost;
+                        ELSE
+                            RAISE NOTICE 'Невозможно вычислить суточную стоимость (нет данных или даты равны)';
+                        END IF;
                     END $$;
 --         4.4. Управляющие операторы. Предусмотрите обработку исключений
 --             4.4.1. (IF) Написать программу для изменения для нахождения корней квадратного уравнения, при этом значения переменных a, b, c. Предусмотрите проверку ввода только числовых значений. 
                     DO $$
                     DECLARE
-                        -- Переменные для квадратного уравнения ax^2 + bx + c = 0
-                        a NUMERIC := 1;
-                        b NUMERIC := -5;
-                        c NUMERIC := 6;
-                        d NUMERIC; -- Дискриминант
-                        x1 NUMERIC;
-                        x2 NUMERIC;
+                        a numeric := 1;
+                        b numeric := -3;
+                        c numeric := 2;
+                        D numeric;
+                        x1 numeric;
+                        x2 numeric;
                     BEGIN
-                        -- DEBUG2: Входные значения
-                        RAISE NOTICE 'DEBUG2: Решение уравнения: %x^2 + %x + % = 0', a, b, c;
-
                         IF a = 0 THEN
-                            -- Линейное уравнение или вырожденный случай
-                            RAISE NOTICE 'DEBUG2: Коэффициент a равен 0. Уравнение не является квадратным.';
-                            IF b = 0 THEN
-                                IF c = 0 THEN
-                                    RAISE NOTICE 'Решение: Любое число.';
-                                ELSE
-                                    RAISE NOTICE 'Решение: Нет корней (противоречие).';
-                                END IF;
-                            ELSE
-                                -- Линейное уравнение: bx + c = 0
-                                x1 := -c / b;
-                                RAISE NOTICE 'Решение (линейное): x = %', x1;
-                            END IF;
-                        ELSE
-                            -- Квадратное уравнение
-                            d := b * b - 4 * a * c;
-
-                            RAISE NOTICE 'DEBUG2: Дискриминант D = %', d;
-
-                            IF d > 0 THEN
-                                x1 := (-b + SQRT(d)) / (2 * a);
-                                x2 := (-b - SQRT(d)) / (2 * a);
-                                RAISE NOTICE 'Два корня: x1=%, x2=%', x1, x2;
-                            ELSIF d = 0 THEN
-                                x1 := -b / (2 * a);
-                                RAISE NOTICE 'Один корень: x1=x2=%', x1;
-                            ELSE
-                                RAISE NOTICE 'Нет действительных корней (D < 0).';
-                            END IF;
+                            RAISE EXCEPTION 'Коэффициент "a" не может быть равен 0';
                         END IF;
 
+                        D := b*b - 4*a*c;
+                        
+                        RAISE NOTICE 'DEBUG: a=%, b=%, c=%, Дискриминант D=%', a, b, c, D;
+
+                        IF D > 0 THEN
+                            x1 := (-b + sqrt(D)) / (2*a);
+                            x2 := (-b - sqrt(D)) / (2*a);
+                            RAISE NOTICE 'Два корня: x1=%, x2=%', x1, x2;
+                        ELSIF D = 0 THEN
+                            x1 := -b / (2*a);
+                            RAISE NOTICE 'Один корень: x1=%', x1;
+                        ELSE
+                            RAISE NOTICE 'Корней нет';
+                        END IF;
                     EXCEPTION
                         WHEN OTHERS THEN
-                            -- Обработка ошибки, например, если SQRT пытается вычислить корень отрицательного числа (хотя IF D < 0 обрабатывает это)
-                            RAISE EXCEPTION 'DEBUG2: Общая ошибка при вычислении: %', SQLERRM;
+                            RAISE NOTICE 'Ошибка вычисления: %', SQLERRM;
                     END $$;
---             4.4.2. (CASE) Напишите программу, которая будет формировать значение переменной bonus, в зависимости от значения переменной summa_pr, если данная переменная больше 10000, то переменная bonus = 70% от суммы, если от 1000 до 10000 30% от суммы, иначе переменная д.б. равна 0.
                     DO $$
                     DECLARE
                         summa_pr NUMERIC := 5500; -- Стоимость проекта
