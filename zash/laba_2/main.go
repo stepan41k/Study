@@ -3,119 +3,246 @@ package main
 import (
 	"fmt"
 	"math"
+	"strings"
 )
 
-// lcg реализует Линейный конгруэнтный генератор.
-// Xn+1 = (a * Xn + c) mod m
-func lcg(a, c, m, seed, n int) []int {
-	result := make([]int, n)
-	x := seed
-	for i := 0; i < n; i++ {
-		x = (a*x + c) % m
-		result[i] = x
-	}
-	return result
+// --- ЧАСТЬ 1: Линейный конгруэнтный генератор (LCG) ---
+
+type LCG struct {
+	a, c, m int
+	current int
 }
 
-// lfsr реализует Линейный рекуррентный генератор (регистр сдвига с линейной обратной связью).
-// Используется неприводимый полином x^5 + x^2 + 1 для n=5.
-// Это соответствует отводам от 5-го и 2-го битов.
-func lfsr(seed uint, n int) []int {
-	result := make([]int, n)
-	// Состояние регистра не должно быть нулевым.
-	if seed == 0 {
-		seed = 1
-	}
-	lfsrState := seed & 0b11111 // Убедимся, что состояние 5-битное
-
-	for i := 0; i < n; i++ {
-		// Для полинома x^5 + x^2 + 1, отводы находятся в позициях 5 и 2.
-		// В 5-битном регистре (биты от 0 до 4) это соответствует XOR битов 4 и 1.
-		bit4 := (lfsrState >> 4) & 1
-		bit1 := (lfsrState >> 1) & 1
-		newBit := bit4 ^ bit1
-
-		// Сдвигаем регистр вправо и устанавливаем новый старший бит
-		lfsrState = (lfsrState >> 1) | (newBit << 4)
-
-		result[i] = int(lfsrState)
-	}
-	return result
+func NewLCG(a, c, m, seed int) *LCG {
+	return &LCG{a: a, c: c, m: m, current: seed}
 }
 
-// calculateFrequency вычисляет частоту каждого числа в последовательности.
-func calculateFrequency(sequence []int) map[int]int {
-	freq := make(map[int]int)
-	for _, num := range sequence {
-		freq[num]++
-	}
-	return freq
+func (gen *LCG) Next() int {
+	// Формула: X_{n+1} = (a*X_n + c) mod m
+	gen.current = (gen.a*gen.current + gen.c) % gen.m
+	return gen.current
 }
 
-// calculateEntropy вычисляет энтропию Шеннона для последовательности.
-func calculateEntropy(sequence []int) float64 {
-	freq := calculateFrequency(sequence)
-	total := float64(len(sequence))
-	if total == 0 {
-		return 0
-	}
+// --- ЧАСТЬ 2: LFSR в поле GF(2^5) ---
 
-	entropy := 0.0
-	for _, count := range freq {
-		probability := float64(count) / total
-		if probability > 0 {
-			entropy -= probability * math.Log2(probability)
+// LFSR реализует генератор на основе матричного уравнения X_{k+1} = A * X_k
+type LFSR struct {
+	State        [5]int // Вектор состояния (биты), index 0 - младший, 4 - старший (или наоборот, зависит от интерпретации матрицы)
+	Coefficients [5]int // Коэффициенты полинома (a_{n-1} ... a_0) для первой строки матрицы
+}
+
+// NewLFSR инициализирует генератор.
+// polyCoeffs - коэффициенты при степенях x^4, x^3, x^2, x^1, x^0.
+// Например, для x^5 + x + 1 (т.е. 1*x^1 + 1*x^0) -> [0, 0, 0, 1, 1]
+func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
+	lfsr := &LFSR{
+		Coefficients: polyCoeffs,
+	}
+	// Преобразуем числовое зерно (seed) в битовый вектор
+	// Предполагаем seed от 1 до 31
+	if seedVal == 0 {
+		seedVal = 1 // Нулевое состояние для LFSR недопустимо (зациклится на 0)
+	}
+	for i := 0; i < 5; i++ {
+		lfsr.State[i] = (seedVal >> i) & 1
+	}
+	// Важно: По заданию матрица A имеет вид:
+	// Строка 0: a4 a3 a2 a1 a0
+	// Строка 1: 1  0  0  0  0
+	// ...
+	// Это значит вектор X_k должен интерпретироваться как столбец.
+	// Примем State[4] как верхний элемент, State[0] как нижний.
+	
+	return lfsr
+}
+
+func (gen *LFSR) Next() int {
+	// Сохраняем текущее состояние для вывода числа
+	// Преобразуем биты в число 1-32
+	val := 0
+	for i := 0; i < 5; i++ {
+		val |= gen.State[i] << i
+	}
+	
+	// Вычисляем следующее состояние: X_{k+1} = A * X_k
+	// Матрица A (по заданию):
+	// [ a4 a3 a2 a1 a0 ]
+	// [ 1  0  0  0  0  ]
+	// [ 0  1  0  0  0  ]
+	// [ 0  0  1  0  0  ]
+	// [ 0  0  0  1  0  ]
+	
+	// Вектор X_k = [x4, x3, x2, x1, x0]^T (где x4 - верхний)
+	// В нашей структуре State[4] это x4.
+	
+	newState := [5]int{}
+	
+	// 1. Вычисляем верхний элемент (первая строка матрицы умножается на столбец)
+	// new_x4 = sum(ai * xi) mod 2
+	topBit := 0
+	for i := 0; i < 5; i++ {
+		// Coefficients идут как a4, a3, a2, a1, a0
+		// State мы храним так, что State[4] это x4.
+		// Индекс i=0 соответствует a4 и x4.
+		coeffIdx := i 
+		stateIdx := 4 - i 
+		
+		topBit ^= (gen.Coefficients[coeffIdx] * gen.State[stateIdx])
+	}
+	newState[4] = topBit & 1
+	
+	// 2. Остальные элементы - это сдвиг (умножение на единичную поддиагональ)
+	// new_x3 = x4
+	// new_x2 = x3
+	// ...
+	newState[3] = gen.State[4]
+	newState[2] = gen.State[3]
+	newState[1] = gen.State[2]
+	newState[0] = gen.State[1]
+	
+	gen.State = newState
+	
+	// Возвращаем числовое значение (коррекция +1, чтобы диапазон был 1-32)
+	return val + 1
+}
+
+// --- ЧАСТЬ 3: Анализатор (Гистограмма и Энтропия) ---
+
+type AnalysisResult struct {
+	Counts  map[int]float64
+	Probs   map[int]float64
+	Entropy float64
+	Total   int
+}
+
+func AnalyzeSequence(seq []int) AnalysisResult {
+	res := AnalysisResult{
+		Counts: make(map[int]float64),
+		Probs:  make(map[int]float64),
+	}
+	res.Total = len(seq)
+	
+	for _, num := range seq {
+		res.Counts[num]++
+	}
+	
+	// Энтропия H(X) = - sum p(x) log2 p(x)
+	for k, v := range res.Counts {
+		p := v / float64(res.Total)
+		res.Probs[k] = p
+		if p > 0 {
+			res.Entropy -= p * math.Log2(p)
 		}
 	}
-	return entropy
+	
+	return res
 }
 
-// analyzeAndPrint выполняет анализ и выводит результаты.
-func analyzeAndPrint(title string, sequence []int) {
-	fmt.Println(title)
-	fmt.Println("--------------------------------------------------")
-	fmt.Printf("Сгенерированная последовательность (длина %d):\n%v\n", len(sequence), sequence)
-
-	freq := calculateFrequency(sequence)
-	fmt.Println("Гистограмма (частотный анализ):")
-	for num, count := range freq {
-		fmt.Printf("  Число %2d: %d раз\n", num, count)
+func PrintAnalysis(title string, seq []int) {
+	analysis := AnalyzeSequence(seq)
+	
+	fmt.Printf("\n--- %s ---\n", title)
+	fmt.Printf("Последовательность (первые 20): %v...\n", seq[:min(len(seq), 20)])
+	fmt.Printf("Длина: %d\n", len(seq))
+	fmt.Printf("Энтропия: %.4f бит\n", analysis.Entropy)
+	
+	// Идеальная энтропия для диапазона
+	// Для LCG диапазон зависит от m, для LFSR диапазон 32.
+	// H_max = log2(N)
+	
+	fmt.Println("Гистограмма:")
+	// Сортировка ключей для красивого вывода
+	minVal, maxVal := 1000, -1
+	for k := range analysis.Counts {
+		if k < minVal { minVal = k }
+		if k > maxVal { maxVal = k }
 	}
-
-	entropy := calculateEntropy(sequence)
-	fmt.Printf("Энтропия последовательности: %.4f\n", entropy)
-	fmt.Println()
+	
+	for i := minVal; i <= maxVal; i++ {
+		if p, ok := analysis.Probs[i]; ok {
+			barLen := int(p * 50) // Масштабирование
+			fmt.Printf("%3d | %.4f | %s\n", i, p, strings.Repeat("█", barLen))
+		}
+	}
 }
+
+func min(a, b int) int {
+	if a < b { return a }
+	return b
+}
+
+// --- MAIN ---
 
 func main() {
-	// Параметры для LCG
+	// 1. Работа с LCG
+	// Вариант 15 из таблицы
+	// Набор 1: a=37, c=67, m=13
+	// Набор 2: a=42, c=70, m=29
+	
 	lcgParams := []struct{ a, c, m int }{
-		{37, 67, 13}, {37, 67, 29},
-		{37, 70, 13}, {37, 70, 29},
-		{42, 67, 13}, {42, 67, 29},
-		{42, 70, 13}, {42, 70, 29},
+		{37, 67, 13},
+		{42, 70, 29},
 	}
-	// Длины генерируемых последовательностей
+	
 	lengths := []int{20, 50, 100}
-	lcgSeed := 1 // Начальное значение для LCG
+	
+	fmt.Println("==========================================")
+	fmt.Println("ЗАДАНИЕ 1: Линейный конгруэнтный генератор (LCG)")
+	fmt.Println("==========================================")
 
-	fmt.Println("=============== Лабораторная работа 2 ===============")
-	fmt.Println("======= Генераторы псевдослучайных величин =======\n")
-
-	fmt.Println("--- Анализ Линейного конгруэнтного генератора (LCG) ---")
-	for _, params := range lcgParams {
-		for _, length := range lengths {
-			sequence := lcg(params.a, params.c, params.m, lcgSeed, length)
-			title := fmt.Sprintf("LCG с параметрами: a=%d, c=%d, m=%d, длина=%d", params.a, params.c, params.m, length)
-			analyzeAndPrint(title, sequence)
+	for i, p := range lcgParams {
+		fmt.Printf("\n>>> Параметры LCG #%d: a=%d, c=%d, m=%d\n", i+1, p.a, p.c, p.m)
+		
+		// Проверка условий максимального периода (для справки)
+		// (c, m) == 1 ?
+		// b = a-1 кратно p (делителям m)?
+		// Если m кратно 4, b кратно 4?
+		// Здесь мы просто запускаем генерацию.
+		
+		for _, l := range lengths {
+			gen := NewLCG(p.a, p.c, p.m, 0) // Seed 0
+			seq := make([]int, 0, l)
+			for k := 0; k < l; k++ {
+				seq = append(seq, gen.Next())
+			}
+			
+			title := fmt.Sprintf("LCG (m=%d) Length=%d", p.m, l)
+			PrintAnalysis(title, seq)
 		}
 	}
 
-	fmt.Println("\n--- Анализ Линейного рекуррентного генератора (LFSR) ---")
-	var lfsrSeed uint = 21 // Начальное значение для LFSR (любое ненулевое 5-битное число, например, 0b10101)
-	for _, length := range lengths {
-		sequence := lfsr(lfsrSeed, length)
-		title := fmt.Sprintf("LFSR (n=5, полином x^5+x^2+1), начальное значение=%d, длина=%d", lfsrSeed, length)
-		analyzeAndPrint(title, sequence)
+	fmt.Println("\n==========================================")
+	fmt.Println("ЗАДАНИЕ 2: LFSR (GF(2^5))")
+	fmt.Println("==========================================")
+	
+	// Полиномы для теста
+	// 1. x^5 + x + 1. Коэффициенты для x^4..x^0: 0, 0, 0, 1, 1
+	// 2. x^5 + x^3 + 1. Коэффициенты для x^4..x^0: 0, 1, 0, 0, 1
+	// 3. x^5 + x^4 + x^2 + x + 1. Коэффициенты: 1, 0, 1, 1, 1
+	
+	polys := []struct {
+		name   string
+		coeffs [5]int
+	}{
+		{"x^5 + x + 1", [5]int{0, 0, 0, 1, 1}},
+		{"x^5 + x^3 + 1", [5]int{0, 1, 0, 0, 1}},
+		{"x^5 + x^4 + x^2 + x + 1", [5]int{1, 0, 1, 1, 1}},
+	}
+
+	for _, poly := range polys {
+		fmt.Printf("\n>>> Полином: %s\n", poly.name)
+		
+		for _, l := range lengths {
+			// Seed = 1 (начальное состояние 00001)
+			gen := NewLFSR(poly.coeffs, 1) 
+			seq := make([]int, 0, l)
+			for k := 0; k < l; k++ {
+				seq = append(seq, gen.Next())
+			}
+			
+			// Ожидаемый диапазон значений: 1 - 32
+			title := fmt.Sprintf("LFSR %s Length=%d", poly.name, l)
+			PrintAnalysis(title, seq)
+		}
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -17,7 +18,12 @@ func initializeMaps() {
 	AlphabetMap = make(map[rune]uint8)
 	ReverseAlphabetMap = make(map[uint8]rune)
 	alphabet := "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-	for i, r := range alphabet {
+	
+	// ВАЖНО: Преобразуем строку в срез рун, чтобы индексы шли по порядку (0, 1, 2...),
+	// а не по байтам (0, 2, 4...).
+	runes := []rune(alphabet)
+	
+	for i, r := range runes {
 		AlphabetMap[r] = uint8(i)
 		ReverseAlphabetMap[uint8(i)] = r
 	}
@@ -29,17 +35,26 @@ type FeistelCipher struct {
 }
 
 // NewFeistelCipher создает новый экземпляр шифра с ключами, сгенерированными из пароля.
-// Ключи - это последовательные 5-битные отрезки пароля.
-// Для 8 раундов требуется пароль длиной не менее 8 символов.
 func NewFeistelCipher(password string) (*FeistelCipher, error) {
 	password = strings.ToUpper(password)
-	if len(password) < 8 {
+	builder := strings.Builder{}
+
+	for _, r := range password {
+		if _, ok := AlphabetMap[r]; ok {
+			builder.WriteRune(r)
+		}
+	}
+	
+
+	runes := []rune(builder.String())
+
+	if len(runes) < 8 {
 		return nil, fmt.Errorf("длина пароля должна быть не менее 8 символов для 8 раундов")
 	}
 
 	keys := make([]uint8, 8)
 	for i := 0; i < 8; i++ {
-		r := rune(password[i])
+		r := runes[i]
 		if val, ok := AlphabetMap[r]; ok {
 			keys[i] = val
 		} else {
@@ -50,12 +65,10 @@ func NewFeistelCipher(password string) (*FeistelCipher, error) {
 	return &FeistelCipher{roundKeys: keys}, nil
 }
 
+
 // fFunction - раундовая функция F.
-// В соответствии со схемой: F(R, K) = ((R + K) mod 32) XOR R
 func (fc *FeistelCipher) fFunction(r, key uint8) uint8 {
-	// Сложение по модулю 32 (5 бит)
 	sum := (r + key) & 0x1F
-	// XOR с исходной правой частью
 	return sum ^ r
 }
 
@@ -66,51 +79,58 @@ func splitBlock(block uint16) (uint8, uint8) {
 	return l, r
 }
 
-// combineHalves объединяет две 5-битные части в один 10-битный блок.
 func combineHalves(l, r uint8) uint16 {
 	return (uint16(l) << 5) | uint16(r)
 }
 
-// EncryptBlock шифрует один 10-битный блок.
-// Параметр verbose управляет выводом промежуточных результатов.
-func (fc *FeistelCipher) EncryptBlock(block uint16, verbose bool) uint16 {
+// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ШИФРОВАНИЯ ---
+func (fc *FeistelCipher) EncryptBlock(block uint16) uint16 {
 	l, r := splitBlock(block)
-	if verbose {
-		fmt.Printf("Начальный блок: L0=%d (%s), R0=%d (%s)\n", l, string(ReverseAlphabetMap[l]), r, string(ReverseAlphabetMap[r]))
-	}
-
 	for i := 0; i < 8; i++ {
-		l_prev, r_prev := l, r
-		f_result := fc.fFunction(r_prev, fc.roundKeys[i])
-		l = r_prev
+		l_prev := l
+		f_result := fc.fFunction(r, fc.roundKeys[i])
+		l = r
 		r = l_prev ^ f_result
-
-		if verbose {
-			fmt.Printf("Раунд %d: Ключ K%d=%d (%s)\n", i+1, i+1, fc.roundKeys[i], string(ReverseAlphabetMap[fc.roundKeys[i]]))
-			fmt.Printf("  F(R%d, K%d) = F(%d, %d) = %d\n", i, i+1, r_prev, fc.roundKeys[i], f_result)
-			fmt.Printf("  L%d = R%d = %d\n", i+1, i, r_prev)
-			fmt.Printf("  R%d = L%d XOR F = %d XOR %d = %d\n", i+1, i, l_prev, f_result, r)
-			fmt.Printf("  Результат раунда: L%d=%d (%s), R%d=%d (%s)\n\n", i+1, l, string(ReverseAlphabetMap[l]), i+1, r, string(ReverseAlphabetMap[r]))
-		}
 	}
-
-	// Важно: после последнего раунда половины L и R не меняются местами.
 	return combineHalves(l, r)
 }
 
-// DecryptBlock расшифровывает один 10-битный блок.
+// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЕШИФРОВАНИЯ ---
 func (fc *FeistelCipher) DecryptBlock(block uint16) uint16 {
 	l, r := splitBlock(block)
-
-	// Раунды и ключи используются в обратном порядке.
 	for i := 7; i >= 0; i-- {
-		l_prev, r_prev := l, r
-		f_result := fc.fFunction(l_prev, fc.roundKeys[i])
-		r = l_prev
+		r_prev := r
+		f_result := fc.fFunction(l, fc.roundKeys[i])
+		r = l
 		l = r_prev ^ f_result
 	}
 	return combineHalves(l, r)
 }
+
+// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАДАНИЯ 1 ---
+func EncryptAndRecordRounds(fc *FeistelCipher, plaintextBlocks []uint16) map[int][]uint16 {
+    roundResults := make(map[int][]uint16)
+	currentBlocks := make([]uint16, len(plaintextBlocks))
+	copy(currentBlocks, plaintextBlocks)
+	for i := 0; i < 8; i++ { 
+		nextBlocks := make([]uint16, len(currentBlocks))
+		for j, block := range currentBlocks {
+			l, r := splitBlock(block)
+			l_prev := l
+            f_result := fc.fFunction(r, fc.roundKeys[i])
+            l = r
+            r = l_prev ^ f_result
+			nextBlocks[j] = combineHalves(l, r)
+		}
+		currentBlocks = nextBlocks
+		roundCopy := make([]uint16, len(currentBlocks))
+		copy(roundCopy, currentBlocks)
+		roundResults[i+1] = roundCopy
+	}
+	return roundResults
+}
+
+
 
 // --- Утилиты для текста и блоков ---
 
@@ -123,8 +143,8 @@ func prepareText(text string) string {
 			builder.WriteRune(r)
 		}
 	}
-	// Если длина нечетная, добавляем 'А' для выравнивания
-	if builder.Len()%2 != 0 {
+	res := builder.String()
+	if len([]rune(res))%2 != 0 {
 		builder.WriteRune('А')
 	}
 	return builder.String()
@@ -133,23 +153,30 @@ func prepareText(text string) string {
 // textToBlocks преобразует строку в срез 10-битных блоков.
 func textToBlocks(text string) ([]uint16, error) {
 	preparedText := prepareText(text)
-	numBlocks := len(preparedText) / 2
+	runes := []rune(preparedText)
+	
+	if len(runes)%2 != 0 {
+		return nil, fmt.Errorf("длина подготовленного текста должна быть четной")
+	}
+
+	numBlocks := len(runes) / 2
 	blocks := make([]uint16, numBlocks)
 
 	for i := 0; i < numBlocks; i++ {
-		r1 := rune(preparedText[2*i])
-		r2 := rune(preparedText[2*i+1])
+		r1 := runes[2*i]
+		r2 := runes[2*i+1]
 
 		v1, ok1 := AlphabetMap[r1]
 		v2, ok2 := AlphabetMap[r2]
 
 		if !ok1 || !ok2 {
-			return nil, fmt.Errorf("недопустимый символ в тексте")
+			return nil, fmt.Errorf("недопустимый символ в тексте после подготовки: %c или %c", r1, r2)
 		}
 		blocks[i] = combineHalves(v1, v2)
 	}
 	return blocks, nil
 }
+
 
 // blocksToText преобразует срез 10-битных блоков обратно в строку.
 func blocksToText(blocks []uint16) string {
@@ -159,6 +186,7 @@ func blocksToText(blocks []uint16) string {
 		builder.WriteRune(ReverseAlphabetMap[l])
 		builder.WriteRune(ReverseAlphabetMap[r])
 	}
+
 	return builder.String()
 }
 
@@ -173,36 +201,54 @@ func blocksToSymbols(blocks []uint16) []uint8 {
 	return symbols
 }
 
-// printHistogram выводит частотную гистограмму для среза символов.
+// printHistogram выводит частотную гистограмму.
 func printHistogram(title string, symbols []uint8) {
 	fmt.Println(title)
+
+	if len(ReverseAlphabetMap) == 0 {
+		fmt.Println("Ошибка: Алфавит не инициализирован.")
+		return
+	}
+
 	counts := make(map[uint8]int)
 	for _, s := range symbols {
 		counts[s]++
 	}
-	// Вывод отсортирован по символам (0-31)
+
+	totalSymbols := float64(len(symbols))
+	if totalSymbols == 0 {
+		fmt.Println("Нет данных для построения гистограммы.")
+		return
+	}
+
 	for i := uint8(0); i < 32; i++ {
-		if count, ok := counts[i]; ok {
-			char := ReverseAlphabetMap[i]
-			// Диапазон [1, 32] в задании, поэтому i+1
-			fmt.Printf("Символ %2d ('%c'): %s (%d)\n", i+1, char, strings.Repeat("=", count), count)
+		char, ok := ReverseAlphabetMap[i]
+		if !ok {
+			continue
 		}
+
+		count := counts[i]
+		prob := float64(count) / totalSymbols
+		barLen := int(prob * 100)
+		bar := strings.Repeat("█", barLen)
+
+		// Диапазон [1, 32] в задании, поэтому i+1
+		fmt.Printf("Символ %2d ('%c') | %.4f | %s\n", i+1, char, prob, bar)
 	}
 	fmt.Println()
 }
 
+
 // ЗАДАНИЕ 2: РЕЖИМЫ ШИФРОВАНИЯ
 
-// encryptECB шифрует в режиме Electronic Codebook.
 func encryptECB(fc *FeistelCipher, plaintext []uint16) []uint16 {
 	ciphertext := make([]uint16, len(plaintext))
 	for i, block := range plaintext {
-		ciphertext[i] = fc.EncryptBlock(block, false)
+		ciphertext[i] = fc.EncryptBlock(block)
 	}
 	return ciphertext
 }
 
-// decryptECB расшифровывает в режиме Electronic Codebook.
 func decryptECB(fc *FeistelCipher, ciphertext []uint16) []uint16 {
 	plaintext := make([]uint16, len(ciphertext))
 	for i, block := range ciphertext {
@@ -211,20 +257,18 @@ func decryptECB(fc *FeistelCipher, ciphertext []uint16) []uint16 {
 	return plaintext
 }
 
-// encryptCBC шифрует в режиме Cipher Block Chaining.
 func encryptCBC(fc *FeistelCipher, plaintext []uint16, iv uint16) []uint16 {
 	ciphertext := make([]uint16, len(plaintext))
 	prevCipherBlock := iv
 	for i, block := range plaintext {
 		inputBlock := block ^ prevCipherBlock
-		encryptedBlock := fc.EncryptBlock(inputBlock, false)
+		encryptedBlock := fc.EncryptBlock(inputBlock)
 		ciphertext[i] = encryptedBlock
 		prevCipherBlock = encryptedBlock
 	}
 	return ciphertext
 }
 
-// decryptCBC расшифровывает в режиме Cipher Block Chaining.
 func decryptCBC(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
 	plaintext := make([]uint16, len(ciphertext))
 	prevCipherBlock := iv
@@ -236,12 +280,11 @@ func decryptCBC(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
 	return plaintext
 }
 
-// encryptCFB шифрует в режиме Cipher Feedback.
 func encryptCFB(fc *FeistelCipher, plaintext []uint16, iv uint16) []uint16 {
 	ciphertext := make([]uint16, len(plaintext))
 	prevBlock := iv
 	for i, pBlock := range plaintext {
-		keystream := fc.EncryptBlock(prevBlock, false)
+		keystream := fc.EncryptBlock(prevBlock)
 		cBlock := pBlock ^ keystream
 		ciphertext[i] = cBlock
 		prevBlock = cBlock
@@ -249,12 +292,11 @@ func encryptCFB(fc *FeistelCipher, plaintext []uint16, iv uint16) []uint16 {
 	return ciphertext
 }
 
-// decryptCFB расшифровывает в режиме Cipher Feedback.
 func decryptCFB(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
 	plaintext := make([]uint16, len(ciphertext))
 	prevBlock := iv
 	for i, cBlock := range ciphertext {
-		keystream := fc.EncryptBlock(prevBlock, false)
+		keystream := fc.EncryptBlock(prevBlock)
 		pBlock := cBlock ^ keystream
 		plaintext[i] = pBlock
 		prevBlock = cBlock
@@ -262,98 +304,106 @@ func decryptCFB(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
 	return plaintext
 }
 
-// encryptOFB шифрует в режиме Output Feedback.
 func encryptOFB(fc *FeistelCipher, plaintext []uint16, iv uint16) []uint16 {
 	ciphertext := make([]uint16, len(plaintext))
 	prevOutput := iv
 	for i, pBlock := range plaintext {
-		keystream := fc.EncryptBlock(prevOutput, false)
+		keystream := fc.EncryptBlock(prevOutput)
 		ciphertext[i] = pBlock ^ keystream
 		prevOutput = keystream
 	}
 	return ciphertext
 }
 
-// decryptOFB расшифровывает в режиме Output Feedback.
 func decryptOFB(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
-	// Дешифрование OFB идентично шифрованию
 	return encryptOFB(fc, ciphertext, iv)
 }
+
 
 func main() {
 	initializeMaps()
 
-	// --- ИСХОДНЫЕ ДАННЫЕ ---
-	const plainText = "РЕЖИМЫШИФРОВАНИЯБЛОЧНЫХШИФРОВ"
-	const password = "СЕКРЕТНЫЙКЛЮЧ" // Используются первые 8 символов
+	const password = "Пуст мешок стоять не будет" 
 
-	fmt.Printf("Исходный текст: %s\n", plainText)
+	const sourceFilename = "source.txt"
+	sourceBytes, err := os.ReadFile(sourceFilename)
+	if err != nil {
+		fmt.Printf("ОШИБКА: Не удалось прочитать исходный файл '%s'.\n", sourceFilename)
+		fmt.Println("Пожалуйста, создайте этот файл в одной папке с программой и поместите в него текст для шифрования.")
+		fmt.Printf("Детали ошибки: %v\n", err)
+		return // Завершаем программу, если файл не найден
+	}
+
+	sourceText := string(sourceBytes)
+
+	fmt.Printf("Исходный текст: %s\n", sourceText)
 	fmt.Printf("Пароль: %s\n\n", password)
 
-	// --- ЗАДАНИЕ 1: Реализация и демонстрация сети Фейстеля ---
-	fmt.Println("--- ЗАДАНИЕ 1: РЕАЛИЗАЦИЯ СЕТИ ФЕЙСТЕЛЯ ---")
-	
 	fc, err := NewFeistelCipher(password)
 	if err != nil {
 		fmt.Println("Ошибка:", err)
 		return
 	}
 	
-	// Шифруем первый блок текста с подробным выводом
-	blocks, err := textToBlocks(plainText)
+	// --- ИЗМЕНЕННЫЙ БЛОК ЗАДАНИЯ 1 ---
+	fmt.Println("--- ЗАДАНИЕ 1: ПОСТРОЕНИЕ ГИСТОГРАММ ПО РАУНДАМ ---")
+	
+	allBlocks, err := textToBlocks(sourceText)
 	if err != nil {
 		fmt.Println("Ошибка:", err)
 		return
 	}
+	
+	// Получаем результаты шифрования после каждого из 8 раундов
+	roundData := EncryptAndRecordRounds(fc, allBlocks)
 
-	fmt.Println("Демонстрация шифрования первого блока текста ('РЕ'):")
-	encryptedBlock := fc.EncryptBlock(blocks[0], true)
-	decryptedBlock := fc.DecryptBlock(encryptedBlock)
+	// Последовательно выводим гистограммы для каждого раунда
+	for i := 1; i <= 8; i++ {
+		title := fmt.Sprintf("Гистограмма после раунда %d:", i)
+		// Преобразуем блоки этого раунда в последовательность 5-битных символов
+		symbols := blocksToSymbols(roundData[i])
+		printHistogram(title, symbols)
+	}
 
-	fmt.Printf("Исходный блок: %d (%s)\n", blocks[0], blocksToText([]uint16{blocks[0]}))
-	fmt.Printf("Зашифрованный блок: %d (%s)\n", encryptedBlock, blocksToText([]uint16{encryptedBlock}))
-	fmt.Printf("Расшифрованный блок: %d (%s)\n", decryptedBlock, blocksToText([]uint16{decryptedBlock}))
-	fmt.Println("Проверка: ", blocksToText([]uint16{blocks[0]}) == blocksToText([]uint16{decryptedBlock}))
 
-	// --- ЗАДАНИЕ 2: Реализация режимов шифрования ---
+	// --- ЗАДАНИЕ 2: РЕАЛИЗАЦИЯ РЕЖИМОВ ШИФРОВАНИЯ ---
 	fmt.Println("\n\n--- ЗАДАНИЕ 2: РЕЖИМЫ ШИФРОВАНИЯ ---")
 
-	// Вектор инициализации (IV), 10-битное число, например 0b1100110011 = 819
 	const iv uint16 = 819
 
 	// 1. Режим ECB
 	fmt.Println("--- 1. Режим ECB (Electronic Codebook) ---")
-	ecbCiphertextBlocks := encryptECB(fc, blocks)
+	ecbCiphertextBlocks := encryptECB(fc, allBlocks)
 	ecbDecryptedBlocks := decryptECB(fc, ecbCiphertextBlocks)
 	fmt.Println("Зашифрованный текст:", blocksToText(ecbCiphertextBlocks))
-	printHistogram("Гистограмма для шифротекста ECB:", blocksToSymbols(ecbCiphertextBlocks))
+	printHistogram("Гистограмма для итогового шифротекста ECB:", blocksToSymbols(ecbCiphertextBlocks))
 	fmt.Println("Расшифрованный текст:", blocksToText(ecbDecryptedBlocks))
-	fmt.Println("Проверка:", plainText == prepareText(blocksToText(ecbDecryptedBlocks)))
+	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(ecbDecryptedBlocks))
 
 	// 2. Режим CBC
 	fmt.Println("\n--- 2. Режим CBC (Cipher Block Chaining) ---")
-	cbcCiphertextBlocks := encryptCBC(fc, blocks, iv)
+	cbcCiphertextBlocks := encryptCBC(fc, allBlocks, iv)
 	cbcDecryptedBlocks := decryptCBC(fc, cbcCiphertextBlocks, iv)
 	fmt.Println("Зашифрованный текст:", blocksToText(cbcCiphertextBlocks))
 	printHistogram("Гистограмма для шифротекста CBC:", blocksToSymbols(cbcCiphertextBlocks))
 	fmt.Println("Расшифрованный текст:", blocksToText(cbcDecryptedBlocks))
-	fmt.Println("Проверка:", plainText == prepareText(blocksToText(cbcDecryptedBlocks)))
+	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(cbcDecryptedBlocks))
 	
 	// 3. Режим CFB
 	fmt.Println("\n--- 3. Режим CFB (Cipher Feedback) ---")
-	cfbCiphertextBlocks := encryptCFB(fc, blocks, iv)
+	cfbCiphertextBlocks := encryptCFB(fc, allBlocks, iv)
 	cfbDecryptedBlocks := decryptCFB(fc, cfbCiphertextBlocks, iv)
 	fmt.Println("Зашифрованный текст:", blocksToText(cfbCiphertextBlocks))
 	printHistogram("Гистограмма для шифротекста CFB:", blocksToSymbols(cfbCiphertextBlocks))
 	fmt.Println("Расшифрованный текст:", blocksToText(cfbDecryptedBlocks))
-	fmt.Println("Проверка:", plainText == prepareText(blocksToText(cfbDecryptedBlocks)))
+	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(cfbDecryptedBlocks))
 
 	// 4. Режим OFB
 	fmt.Println("\n--- 4. Режим OFB (Output Feedback) ---")
-	ofbCiphertextBlocks := encryptOFB(fc, blocks, iv)
+	ofbCiphertextBlocks := encryptOFB(fc, allBlocks, iv)
 	ofbDecryptedBlocks := decryptOFB(fc, ofbCiphertextBlocks, iv)
 	fmt.Println("Зашифрованный текст:", blocksToText(ofbCiphertextBlocks))
 	printHistogram("Гистограмма для шифротекста OFB:", blocksToSymbols(ofbCiphertextBlocks))
 	fmt.Println("Расшифрованный текст:", blocksToText(ofbDecryptedBlocks))
-	fmt.Println("Проверка:", plainText == prepareText(blocksToText(ofbDecryptedBlocks)))
+	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(ofbDecryptedBlocks))
 }
