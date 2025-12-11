@@ -6,257 +6,277 @@ import (
 	"strings"
 )
 
-// Структура для хранения параметров участника из таблицы
-type ParticipantParams struct {
-	ID int
-	N  int64
-	E  int64
-	P  int64 // В задании 1 это "открытый элемент P"
+// Структура для хранения параметров из таблицы
+type TaskParams struct {
+	N *big.Int
+	E *big.Int
+	P *big.Int
 }
 
-// --- Задание 1: Диффи-Хеллман ---
 
-// Факторизует число n на два простых сомножителя
-func factorize(n int64) (int64, int64) {
-	for i := int64(2); i*i <= n; i++ {
-		if n%i == 0 {
-			return i, n / i
-		}
-	}
-	return n, 1
+var paramsTable = map[int]TaskParams{
+	1:  {N: big.NewInt(473), E: big.NewInt(17), P: big.NewInt(37)},
+	2:  {N: big.NewInt(481), E: big.NewInt(19), P: big.NewInt(23)},
+	3:  {N: big.NewInt(493), E: big.NewInt(13), P: big.NewInt(29)},
+	4:  {N: big.NewInt(589), E: big.NewInt(19), P: big.NewInt(31)},
+	5:  {N: big.NewInt(437), E: big.NewInt(17), P: big.NewInt(41)},
+	6:  {N: big.NewInt(1073), E: big.NewInt(13), P: big.NewInt(29)},
+	7:  {N: big.NewInt(667), E: big.NewInt(17), P: big.NewInt(43)},
+	8:  {N: big.NewInt(377), E: big.NewInt(35), P: big.NewInt(37)},
+	9:  {N: big.NewInt(899), E: big.NewInt(19), P: big.NewInt(23)},
+	10: {N: big.NewInt(551), E: big.NewInt(13), P: big.NewInt(29)},
+	11: {N: big.NewInt(473), E: big.NewInt(19), P: big.NewInt(31)},
+	12: {N: big.NewInt(481), E: big.NewInt(5), P: big.NewInt(41)},
+	13: {N: big.NewInt(493), E: big.NewInt(55), P: big.NewInt(23)},
+	14: {N: big.NewInt(589), E: big.NewInt(77), P: big.NewInt(43)},
+	15: {N: big.NewInt(437), E: big.NewInt(65), P: big.NewInt(37)},
+	16: {N: big.NewInt(1073), E: big.NewInt(99), P: big.NewInt(23)},
+	17: {N: big.NewInt(667), E: big.NewInt(65), P: big.NewInt(29)},
+	18: {N: big.NewInt(377), E: big.NewInt(55), P: big.NewInt(31)},
+	19: {N: big.NewInt(899), E: big.NewInt(29), P: big.NewInt(41)},
+	20: {N: big.NewInt(551), E: big.NewInt(31), P: big.NewInt(29)},
+	21: {N: big.NewInt(473), E: big.NewInt(43), P: big.NewInt(43)},
+	22: {N: big.NewInt(481), E: big.NewInt(47), P: big.NewInt(37)},
+	23: {N: big.NewInt(493), E: big.NewInt(47), P: big.NewInt(23)},
+	24: {N: big.NewInt(493), E: big.NewInt(61), P: big.NewInt(29)},
+	25: {N: big.NewInt(437), E: big.NewInt(53), P: big.NewInt(31)},
 }
 
-// Находит наименьший примитивный корень по модулю p
-func findPrimitiveRoot(p int64) int64 {
-	if p == 2 {
-		return 1
-	}
+// =================================================================================
+// Задание 1: Алгоритм Диффи-Хэллмана
+// =================================================================================
 
-	phi := p - 1
-	pMinus1Factors := findPrimeFactors(phi)
+func solveDiffieHellman(studentID int) {
+	fmt.Println("=====================================================")
+	fmt.Println("Задание 1: Алгоритм обмена ключами Диффи-Хэллмана")
+	fmt.Println("=====================================================")
 
-	for g := int64(2); g <= p; g++ {
-		isPrimitive := true
-		for _, factor := range pMinus1Factors {
-			// g^((p-1)/factor) mod p
-			exp := new(big.Int).Div(big.NewInt(phi), big.NewInt(factor))
-			res := new(big.Int).Exp(big.NewInt(g), exp, big.NewInt(p))
-			if res.Cmp(big.NewInt(1)) == 0 {
-				isPrimitive = false
-				break
-			}
-		}
-		if isPrimitive {
-			return g
-		}
-	}
-	return -1
-}
-
-// Находит простые сомножители числа
-func findPrimeFactors(n int64) []int64 {
-	factors := make(map[int64]bool)
-	d := int64(2)
-	temp := n
-	for d*d <= temp {
-		if temp%d == 0 {
-			factors[d] = true
-			temp /= d
-		} else {
-			d++
-		}
-	}
-	if temp > 1 {
-		factors[temp] = true
-	}
-
-	keys := make([]int64, 0, len(factors))
-	for k := range factors {
-		keys = append(keys, k)
-	}
-	return keys
-}
-
-func solveDiffieHellman(params ParticipantParams, studentI, studentJ int) {
-	fmt.Println("--- Задание 1: Реализация обмена ключами по алгоритму Диффи-Хеллмана ---")
-
-	// 1. Находим p из n участника i
-	p, q := factorize(params.N)
-	// Обычно берется большее простое число
-	if p < q {
-		p, q = q, p
-	}
-	fmt.Printf("1. Параметры участника %d: n = %d. Факторизуем n: %d * %d. Выбираем p = %d.\n", studentI, params.N, p, q, p)
-
-	// 2. Находим примитивный элемент поля GF(p)
-	g := findPrimitiveRoot(p)
-	fmt.Printf("2. Находим примитивный корень (генератор) g для поля GF(%d). g = %d.\n", p, g)
-
-	// 3. Секретные ключи участников
-	a := int64(studentI)
-	b := int64(studentJ)
-	fmt.Printf("3. Секретные ключи: a = %d (для участника %d), b = %d (для участника %d).\n", a, studentI, b, studentJ)
-
-	// 4. Вычисление открытых ключей
-	bigP := big.NewInt(p)
-	bigG := big.NewInt(g)
-	bigA := new(big.Int).Exp(bigG, big.NewInt(a), bigP)
-	bigB := new(big.Int).Exp(bigG, big.NewInt(b), bigP)
-	fmt.Printf("4. Участник %d вычисляет открытый ключ A = g^a mod p = %d^%d mod %d = %s\n", studentI, g, a, p, bigA.String())
-	fmt.Printf("   Участник %d вычисляет открытый ключ B = g^b mod p = %d^%d mod %d = %s\n", studentJ, g, b, p, bigB.String())
-
-	// 5. Вычисление общего секретного ключа
-	sharedKey1 := new(big.Int).Exp(bigB, big.NewInt(a), bigP)
-	sharedKey2 := new(big.Int).Exp(bigA, big.NewInt(b), bigP)
-	fmt.Printf("5. Участник %d вычисляет общий ключ S1 = B^a mod p = %s^%d mod %d = %s\n", studentI, bigB.String(), a, p, sharedKey1.String())
-	fmt.Printf("   Участник %d вычисляет общий ключ S2 = A^b mod p = %s^%d mod %d = %s\n", studentJ, bigA.String(), b, p, sharedKey2.String())
-
-	fmt.Printf("\nРезультат: Общий секретный ключ равен: %s\n", sharedKey1.String())
-	fmt.Println(strings.Repeat("-", 70))
-}
-
-// --- Задание 2: RSA ---
-
-// Преобразование текста в числовые блоки
-func textToBlocks(text string, n int64) []*big.Int {
-	// Кодировка Z32: А=1, Б=2, ... Я=33, пробел=99
-	alphabet := "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-	mapping := make(map[rune]int)
-	for i, r := range alphabet {
-		mapping[r] = i + 1
-	}
-
-	var numericStrings []string
-	for _, char := range strings.ToUpper(text) {
-		if val, ok := mapping[char]; ok {
-			numericStrings = append(numericStrings, fmt.Sprintf("%02d", val))
-		} else if char == ' ' {
-			numericStrings = append(numericStrings, "99")
-		} else if char == '.' {
-			// Игнорируем точки в инициалах
-		}
-	}
-
-	var blocks []*big.Int
-	currentBlock := ""
-	for _, numStr := range numericStrings {
-		if len(currentBlock+numStr) >= len(fmt.Sprintf("%d", n)) {
-			blockInt, _ := new(big.Int).SetString(currentBlock, 10)
-			if blockInt.Cmp(big.NewInt(n)) < 0 {
-				blocks = append(blocks, blockInt)
-				currentBlock = numStr
-			} else {
-				panic("Ошибка: блок превышает n")
-			}
-		} else {
-			currentBlock += numStr
-		}
-	}
-	if len(currentBlock) > 0 {
-		blockInt, _ := new(big.Int).SetString(currentBlock, 10)
-		blocks = append(blocks, blockInt)
-	}
-	return blocks
-}
-
-func solveRSA(sender, receiver ParticipantParams) {
-	fmt.Println("--- Задание 2: Реализация шифрования и цифровой подписи RSA ---")
-
-	// --- 2.1. Шифрование сообщения ---
-	fmt.Println("\n--- 2.1. Абонент", sender.ID, "отправляет зашифрованное сообщение абоненту", receiver.ID, "---")
-	message := "ПЕТРОВ И А"
-	fmt.Printf("Исходное сообщение: \"%s\"\n", message)
-
-	// Шифруем с помощью ОТКРЫТОГО ключа получателя (receiver)
-	blocks := textToBlocks(message, receiver.N)
-	fmt.Println("Сообщение, разбитое на числовые блоки M:", blocks)
-
-	encryptedBlocks := make([]*big.Int, len(blocks))
-	bigNReceiver := big.NewInt(receiver.N)
-	bigEReceiver := big.NewInt(receiver.E)
-
-	for i, m := range blocks {
-		c := new(big.Int).Exp(m, bigEReceiver, bigNReceiver)
-		encryptedBlocks[i] = c
-	}
-
-	fmt.Printf("Шифрование с помощью открытого ключа получателя (e=%d, n=%d).\n", receiver.E, receiver.N)
-	fmt.Println("Зашифрованные блоки C:", encryptedBlocks)
-
-	// --- 2.2. Создание цифровой подписи ---
-	fmt.Println("\n--- 2.2. Абонент", sender.ID, "подписывает сообщение для абонента", receiver.ID, "---")
-	fmt.Printf("Исходное сообщение: \"%s\"\n", message)
-
-	// Подписываем с помощью СЕКРЕТНОГО ключа отправителя (sender)
-	// 1. Вычисляем секретный ключ d для отправителя
-	p, q := factorize(sender.N)
-	bigP := big.NewInt(p - 1)
-	bigQ := big.NewInt(q - 1)
-	phi := new(big.Int).Mul(bigP, bigQ)
-
-	bigESender := big.NewInt(sender.E)
-	d := new(big.Int).ModInverse(bigESender, phi)
-
-	fmt.Printf("1. Вычисляем секретный ключ d для отправителя (ID=%d):\n", sender.ID)
-	fmt.Printf("   n = %d, e = %d. Факторы: p=%d, q=%d.\n", sender.N, sender.E, p, q)
-	fmt.Printf("   Функция Эйлера φ(n) = (p-1)*(q-1) = %s\n", phi.String())
-	fmt.Printf("   Секретный ключ d (e*d ≡ 1 mod φ(n)) = %s\n", d.String())
-
-	// 2. Подписываем каждый блок
-	signatureBlocks := make([]*big.Int, len(blocks))
-	bigNSender := big.NewInt(sender.N)
-	for i, m := range blocks {
-		s := new(big.Int).Exp(m, d, bigNSender)
-		signatureBlocks[i] = s
-	}
-	fmt.Println("2. Подписываем сообщение с помощью секретного ключа отправителя d.")
-	fmt.Println("Исходные блоки M:", blocks)
-	fmt.Println("Блоки подписи S:", signatureBlocks)
-
-	// 3. Проверка подписи (для демонстрации)
-	fmt.Println("\n3. Получатель (ID=", receiver.ID, ") проверяет подпись с помощью открытого ключа отправителя (e,n).")
-	fmt.Printf("   Ключ проверки: e=%d, n=%d\n", sender.E, sender.N)
-
-	verified := true
-	for i, s := range signatureBlocks {
-		mPrime := new(big.Int).Exp(s, bigESender, bigNSender)
-		fmt.Printf("   Проверка блока %d: S^e mod n = %s^%d mod %d = %s. Исходный блок M = %s. ", i+1, s.String(), sender.E, sender.N, mPrime.String(), blocks[i].String())
-		if mPrime.Cmp(blocks[i]) == 0 {
-			fmt.Println("-> Подпись верна.")
-		} else {
-			fmt.Println("-> ПОДПИСЬ НЕВЕРНА!")
-			verified = false
-		}
-	}
-	if verified {
-		fmt.Println("Результат: Цифровая подпись всего сообщения подтверждена.")
-	} else {
-		fmt.Println("Результат: Цифровая подпись сообщения НЕ подтверждена.")
-	}
-	fmt.Println(strings.Repeat("-", 70))
-}
-
-func main() {
-	// Данные из Таблицы 6
-	allParams := map[int]ParticipantParams{
-		15: {ID: 15, N: 437, E: 65, P: 37},
-		20: {ID: 20, N: 551, E: 31, P: 29},
-	}
-
-	studentI := 15
-	studentJ := 35 - studentI
-
-	paramsI, okI := allParams[studentI]
-	paramsJ, okJ := allParams[studentJ]
-
-	if !okI || !okJ {
-		fmt.Println("Ошибка: не найдены параметры для студентов", studentI, "или", studentJ)
+	params, ok := paramsTable[studentID]
+	if !ok {
+		fmt.Printf("Ошибка: Не найдены параметры для студента с номером %d.\n", studentID)
 		return
 	}
 
+	p := params.P
+	fmt.Printf("Выбран студент с номером i = %d.\n", studentID)
+	fmt.Printf("Второй участник имеет номер 35 - i = %d.\n", 35-studentID)
+	fmt.Printf("Из таблицы 6 для варианта %d, открытый элемент (модуль) P = %v.\n", studentID, p)
+
+	// Проверка, является ли P простым числом.
+	if !p.ProbablyPrime(20) {
+		fmt.Printf("\n!!! ОШИБКА: P = %v не является простым числом. Алгоритм не может быть выполнен.\n", p)
+		return
+	}
+
+	// Шаг 1: Найти примитивный элемент g (альфа) поля GF(p)
+	// Для P = 37, p-1 = 36. Простые делители 36: 2, 3.
+	// Проверим g = 2: 2^(36/2) mod 37 != 1; 2^(36/3) mod 37 != 1.
+	// Следовательно, g = 2 является примитивным элементом для P = 37.
+	g := big.NewInt(2)
+	fmt.Printf("\nШаг 1: Нахождение примитивного элемента.\n")
+	fmt.Printf("Для P = %v, p-1 = %d. Простые делители %d: 2 и 3.\n", p, 36, 36)
+	fmt.Printf("Выбираем g = %v в качестве примитивного элемента (генератора группы).\n", g)
+	
+	// Шаг 2: Генерация секретных ключей
+	aliceSecretKey := big.NewInt(int64(studentID))
+	bobSecretKey := big.NewInt(int64(35 - studentID))
+	fmt.Println("\nШаг 2: Секретные ключи участников.")
+	fmt.Printf("Секретный ключ абонента A (i=%d): a = %v\n", studentID, aliceSecretKey)
+	fmt.Printf("Секретный ключ абонента B (i=%d): b = %v\n", 35-studentID, bobSecretKey)
+
+	// Шаг 3: Вычисление открытых ключей
+	alicePublicKey := new(big.Int).Exp(g, aliceSecretKey, p)
+	bobPublicKey := new(big.Int).Exp(g, bobSecretKey, p)
+	fmt.Println("\nШаг 3: Вычисление открытых ключей.")
+	fmt.Printf("Абонент A вычисляет свой открытый ключ: A = g^a mod P = %v^%v mod %v = %v\n", g, aliceSecretKey, p, alicePublicKey)
+	fmt.Printf("Абонент B вычисляет свой открытый ключ: B = g^b mod P = %v^%v mod %v = %v\n", g, bobSecretKey, p, bobPublicKey)
+	fmt.Println("Абоненты обмениваются открытыми ключами A и B.")
+
+	// Шаг 4: Вычисление общего секретного ключа
+	sharedKeyAlice := new(big.Int).Exp(bobPublicKey, aliceSecretKey, p)
+	sharedKeyBob := new(big.Int).Exp(alicePublicKey, bobSecretKey, p)
+	fmt.Println("\nШаг 4: Вычисление общего секретного ключа.")
+	fmt.Printf("Абонент A вычисляет общий ключ: K = B^a mod P = %v^%v mod %v = %v\n", bobPublicKey, aliceSecretKey, p, sharedKeyAlice)
+	fmt.Printf("Абонент B вычисляет общий ключ: K = A^b mod P = %v^%v mod %v = %v\n", alicePublicKey, bobSecretKey, p, sharedKeyBob)
+	
+	if sharedKeyAlice.Cmp(sharedKeyBob) == 0 {
+		fmt.Printf("\nРезультат: Общий секретный ключ успешно вычислен и равен %v.\n", sharedKeyAlice)
+	} else {
+		fmt.Printf("\nОшибка: Вычисленные ключи не совпадают!\n")
+	}
+}
+
+
+// =================================================================================
+// Задание 2: Алгоритм RSA
+// =================================================================================
+
+// Вспомогательная функция для нахождения p и q (факторизация)
+func factorize(n *big.Int) (*big.Int, *big.Int) {
+	limit := new(big.Int).Sqrt(n)
+	i := big.NewInt(2)
+	one := big.NewInt(1)
+	
+	if new(big.Int).Rem(n, i).Cmp(big.NewInt(0)) == 0 {
+		return new(big.Int).Set(i), new(big.Int).Div(n, i)
+	}
+
+	i.Add(i, one) 
+	for i.Cmp(limit) <= 0 {
+		if new(big.Int).Rem(n, i).Cmp(big.NewInt(0)) == 0 {
+			p := new(big.Int).Set(i)
+			q := new(big.Int).Div(n, i)
+			return p, q
+		}
+		i.Add(i, big.NewInt(2)) 
+	}
+	return nil, nil
+}
+
+
+func solveRSA(studentID int) {
+	fmt.Println("\n\n=====================================================")
+	fmt.Println("Задание 2: Шифрование и цифровая подпись RSA")
+	fmt.Println("=====================================================")
+	
+	senderID := studentID
+	recipientID := 35 - studentID
+	
+	fmt.Printf("Абонент-отправитель: студент с номером i = %d.\n", senderID)
+	fmt.Printf("Абонент-получатель: студент с номером 35 - i = %d.\n", recipientID)
+
+	senderParams, ok1 := paramsTable[senderID]
+	recipientParams, ok2 := paramsTable[recipientID]
+
+	if !ok1 || !ok2 {
+		fmt.Println("Ошибка: не найдены параметры для одного из участников.")
+		return
+	}
+
+	// --- Шаг 1: Определение ключей участников ---
+	fmt.Println("\n--- Шаг 1: Определение ключей (открытых и закрытых) ---")
+	
+	// Ключи отправителя (Алиса)
+	n_A, e_A := senderParams.N, senderParams.E
+	p_A, q_A := factorize(n_A)
+	one := big.NewInt(1)
+	phi_A := new(big.Int).Mul(new(big.Int).Sub(p_A, one), new(big.Int).Sub(q_A, one))
+	d_A := new(big.Int).ModInverse(e_A, phi_A)
+	fmt.Printf("Отправитель (Абонент A, i=%d):\n", senderID)
+	fmt.Printf("  Открытый ключ (eA, nA) = (%v, %v)\n", e_A, n_A)
+	fmt.Printf("  Факторизация nA=%v: pA=%v, qA=%v (437 = 19 * 23)\n", n_A, p_A, q_A)
+	fmt.Printf("  Функция Эйлера: φ(nA) = (%v-1)*(%v-1) = %v\n", p_A, q_A, phi_A)
+	fmt.Printf("  Закрытый ключ dA (eA*dA ≡ 1 mod φ(nA)) = %v\n\n", d_A)
+
+	// Ключи получателя (Боб)
+	n_B, e_B := recipientParams.N, recipientParams.E
+	p_B, q_B := factorize(n_B)
+	phi_B := new(big.Int).Mul(new(big.Int).Sub(p_B, one), new(big.Int).Sub(q_B, one))
+	d_B := new(big.Int).ModInverse(e_B, phi_B)
+	fmt.Printf("Получатель (Абонент B, i=%d):\n", recipientID)
+	fmt.Printf("  Открытый ключ (eB, nB) = (%v, %v)\n", e_B, n_B)
+	fmt.Printf("  Факторизация nB=%v: pB=%v, qB=%v (551 = 19 * 29)\n", n_B, p_B, q_B)
+	fmt.Printf("  Функция Эйлера: φ(nB) = (%v-1)*(%v-1) = %v\n", p_B, q_B, phi_B)
+	fmt.Printf("  Закрытый ключ dB (eB*dB ≡ 1 mod φ(nB)) = %v\n", d_B)
+
+
+	// --- Шаг 2: Подготовка сообщения ---
+	fmt.Println("\n--- Шаг 2: Подготовка сообщения к шифрованию ---")
+	message := "РАСПОПОВ С И"
+	
+	alphabet := " АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+	
+	var numericString string
+	for _, char := range message {
+		index := strings.IndexRune(alphabet, char)
+		if index != -1 {
+			numericString += fmt.Sprintf("%02d", index)
+		}
+	}
+	fmt.Printf("Исходное сообщение: '%s'\n", message)
+	fmt.Printf("Сообщение в числовом виде (кодировка Z32): %s\n", numericString)
+	
+	var blocks []*big.Int
+	for i := 0; i < len(numericString); i += 2 {
+		blockStr := numericString[i : i+2]
+		blockInt, _ := new(big.Int).SetString(blockStr, 10)
+		blocks = append(blocks, blockInt)
+	}
+	fmt.Printf("Сообщение, разбитое на числовые блоки M: %v\n", blocks)
+	
+	// --- Задача 2.1: Шифрование сообщения ---
+	fmt.Println("\n--- Задача 2.1: Шифрование сообщения ---")
+	fmt.Println("Отправитель (A) шифрует сообщение для получателя (B), используя открытый ключ получателя (eB, nB).")
+	fmt.Printf("Формула: C = M^eB mod nB\n")
+	
+	var encryptedBlocks []*big.Int
+	for _, block := range blocks {
+		encryptedBlock := new(big.Int).Exp(block, e_B, n_B)
+		encryptedBlocks = append(encryptedBlocks, encryptedBlock)
+		fmt.Printf("  Блок M=%-3v -> C = %-3v^%v mod %v = %v\n", block, block, e_B, n_B, encryptedBlock)
+	}
+	fmt.Printf("\nЗашифрованное сообщение (последовательность блоков C): %v\n", encryptedBlocks)
+	
+	// Демонстрация расшифровки
+	fmt.Println("\nПолучатель (B) расшифровывает сообщение, используя свой закрытый ключ (dB, nB).")
+	fmt.Printf("Формула: M = C^dB mod nB\n")
+	var decryptedBlocks []*big.Int
+	for i, encryptedBlock := range encryptedBlocks {
+		decryptedBlock := new(big.Int).Exp(encryptedBlock, d_B, n_B)
+		decryptedBlocks = append(decryptedBlocks, decryptedBlock)
+		fmt.Printf("  Блок C=%-3v -> M = %-3v^%v mod %v = %v (исходный: %v)\n", encryptedBlock, encryptedBlock, d_B, n_B, decryptedBlock, blocks[i])
+	}
+	fmt.Printf("Расшифрованные блоки M: %v. Расшифровка успешна.\n", decryptedBlocks)
+
+	// --- Задача 2.2: Создание цифровой подписи ---
+	fmt.Println("\n--- Задача 2.2: Создание цифровой подписи для открытого сообщения ---")
+	fmt.Println("Отправитель (A) подписывает сообщение, используя свой закрытый ключ (dA, nA).")
+	fmt.Printf("Формула: S = M^dA mod nA\n")
+	
+	var signatureBlocks []*big.Int
+	for _, block := range blocks {
+		signatureBlock := new(big.Int).Exp(block, d_A, n_A)
+		signatureBlocks = append(signatureBlocks, signatureBlock)
+		fmt.Printf("  Блок M=%-3v -> S = %-3v^%v mod %v = %v\n", block, block, d_A, n_A, signatureBlock)
+	}
+	fmt.Printf("\nЦифровая подпись (последовательность блоков S): %v\n", signatureBlocks)
+	fmt.Printf("Отправитель посылает получателю открытое сообщение '%s' и подпись.\n", message)
+	
+	// Демонстрация проверки подписи
+	fmt.Println("\nПолучатель (B) проверяет подпись, используя открытый ключ отправителя (eA, nA).")
+	fmt.Printf("Формула: M_verified = S^eA mod nA\n")
+	var verifiedBlocks []*big.Int
+	for i, signatureBlock := range signatureBlocks {
+		verifiedBlock := new(big.Int).Exp(signatureBlock, e_A, n_A)
+		verifiedBlocks = append(verifiedBlocks, verifiedBlock)
+		fmt.Printf("  Блок S=%-3v -> M' = %-3v^%v mod %v = %v (исходный: %v)\n", signatureBlock, signatureBlock, e_A, n_A, verifiedBlock, blocks[i])
+	}
+	
+	match := true
+	if len(blocks) != len(verifiedBlocks) {
+		match = false
+	} else {
+		for i := range blocks {
+			if blocks[i].Cmp(verifiedBlocks[i]) != 0 {
+				match = false; break;
+			}
+		}
+	}
+
+	if match {
+		fmt.Println("\nРезультат: Восстановленные блоки совпадают с исходными. Подпись верна.")
+	} else {
+		fmt.Println("\nРезультат: Восстановленные блоки НЕ совпадают с исходными. Подпись неверна.")
+	}
+}
+
+func main() {
+	// Номер студента i, указанный в задании (выделена строка 15)
+	studentID := 15
+
 	// Выполнение Задания 1
-	solveDiffieHellman(paramsI, studentI, studentJ)
+	solveDiffieHellman(studentID)
 
 	// Выполнение Задания 2
-	solveRSA(paramsI, paramsJ)
+	solveRSA(studentID)
 }

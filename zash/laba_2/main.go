@@ -142,7 +142,7 @@ func PrintAnalysis(title string, seq []int) {
 	analysis := AnalyzeSequence(seq)
 	
 	fmt.Printf("\n--- %s ---\n", title)
-	fmt.Printf("Последовательность (первые 20): %v...\n", seq[:min(len(seq), 20)])
+	fmt.Printf("Последовательность: %v\n", seq)
 	fmt.Printf("Длина: %d\n", len(seq))
 	fmt.Printf("Энтропия: %.4f бит\n", analysis.Entropy)
 	
