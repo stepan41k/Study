@@ -1,2 +1,5 @@
 psql -h 5942e-rw.db.pub.dbaas.postgrespro.ru -U raspopov_si -d dbstud
 h#Lv7S6@%Y#3d
+
+psql -h 5942e-rw.db.pub.dbaas.postgrespro.ru -U raspopov_si -d dbwork
+h#Lv7S6@%Y#3d
