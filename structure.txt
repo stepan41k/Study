@@ -1,0 +1,7 @@
+z5_project:  id, projectname, about, startdate, enddate, status, price, idcommand, project_type, shifr, category, категория, result, project_deadline, mentor_id 
+z5_student:  id, lastname, firstname, role, email, yearb, groupname, idcommand, manager_id, level, категория_пользователя, категория 
+z5_mentor:  id, lastname, firstname, email, idcommand
+z5_command:  id, command 
+z5_task: id, task, idproject, score 
+z5_resource: id, resource, idproject
+z5_grouplist:  groupname, sp
