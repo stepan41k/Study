@@ -43,7 +43,6 @@ func main() {
 	filePaths := args[:2] // Берем только первые два аргумента
 
 	// Создание имени директории для вывода (file1_file2)
-	// Удаляем расширения .txt для красоты названия папки
 	baseName1 := strings.TrimSuffix(filepath.Base(filePaths[0]), filepath.Ext(filePaths[0]))
 	baseName2 := strings.TrimSuffix(filepath.Base(filePaths[1]), filepath.Ext(filePaths[1]))
 	outputDir := fmt.Sprintf("%s_%s", baseName1, baseName2)
@@ -69,7 +68,7 @@ func main() {
 			fmt.Printf("Внимание: Файл %s слишком короткий (<200 символов)\n", path)
 		}
 
-		// Автоопределение языка (если есть кириллица -> RU, иначе -> EN)
+		// Автоопределение языка
 		lang := detectLanguage(text)
 
 		fmt.Printf("\n=== Анализ файла: %s (%s) ===\n", path, lang)
@@ -78,12 +77,12 @@ func main() {
 		analysis := analyzeText(text, lang, filepath.Base(path))
 		analyses = append(analyses, analysis)
 
-		// 3. Вывод результатов в консоль (Гистограмма и Энтропия)
+		// 3. Вывод результатов в консоль (Визуальная гистограмма и Энтропия)
 		printHistogram(analysis)
 		fmt.Printf("Энтропия источника H(A): %.4f бит\n", analysis.Entropy)
 		fmt.Printf("Марковская энтропия 1-го порядка H(A|A): %.4f бит\n", analysis.MarkovEntropy)
 
-		// Сохранение таблиц в CSV (в созданную директорию)
+		// Сохранение таблиц в CSV (включая новую гистограмму)
 		saveTablesToCSV(analysis, outputDir)
 	}
 
@@ -136,7 +135,6 @@ func analyzeText(rawText string, lang string, filename string) *TextAnalysis {
 	}
 
 	// Вероятности одиночных символов и Энтропия H(A)
-	// Важно: проходим по всему алфавиту, даже если символов в тексте нет (тогда count=0)
 	for _, r := range ta.Alphabet {
 		count := ta.CharCounts[r]
 		if count > 0 {
@@ -185,7 +183,6 @@ func analyzeText(rawText string, lang string, filename string) *TextAnalysis {
 
 // analyzePair рассчитывает H(A,B) и H(A|B) для двух текстов
 func analyzePair(t1, t2 *TextAnalysis) {
-	// Обрезаем по минимальной длине
 	minLen := len(t1.CleanText)
 	if len(t2.CleanText) < minLen {
 		minLen = len(t2.CleanText)
@@ -202,7 +199,7 @@ func analyzePair(t1, t2 *TextAnalysis) {
 	}
 
 	total := float64(minLen)
-	jointEntropy := 0.0 // H(A, B)
+	jointEntropy := 0.0
 
 	for _, count := range jointCounts {
 		p := count / total
@@ -211,8 +208,6 @@ func analyzePair(t1, t2 *TextAnalysis) {
 		}
 	}
 
-	// H(A|B) = H(A, B) - H(B)
-	// Используем полную энтропию второго текста как приближение
 	condEntropy := jointEntropy - t2.Entropy
 
 	fmt.Printf("Текст A: %s (Lang: %s)\n", t1.Filename, t1.Language)
@@ -246,7 +241,6 @@ func cleanText(text string, lang string) []rune {
 func getAlphabet(lang string) []rune {
 	var abc []rune
 	if lang == LangRu {
-		// Формируем алфавит так, чтобы 'ё' стояла после 'е'
 		for r := 'а'; r <= 'я'; r++ {
 			abc = append(abc, r)
 			if r == 'е' {
@@ -265,50 +259,34 @@ func getAlphabet(lang string) []rune {
 
 func printHistogram(ta *TextAnalysis) {
 	fmt.Println("Гистограмма:")
-
-	// Находим максимальное количество символов для масштабирования
 	maxCount := 0.0
 	for _, count := range ta.CharCounts {
 		if count > maxCount {
 			maxCount = count
 		}
 	}
-
-	// Максимальная визуальная длина полоски (константа)
 	const maxBarLen = 30
-
 	for _, r := range ta.Alphabet {
 		count := ta.CharCounts[r]
-
-		// Вычисляем длину полоски для текущего символа
 		currentBarLen := 0
 		if maxCount > 0 {
 			currentBarLen = int((count / maxCount) * float64(maxBarLen))
 		}
-
-		// Формируем полоску
 		bar := strings.Repeat("█", currentBarLen)
-		
-		// Формируем отступ (пробелы), чтобы числа выровнялись
-		// Отступ равен разнице между макс. длиной (30) и длиной текущей полоски
 		padding := strings.Repeat(" ", maxBarLen-currentBarLen)
-
-		// Вывод: символ | полоска + пробелы + (количество)
 		fmt.Printf("%c | %s%s (%d)\n", r, bar, padding, int(count))
 	}
 	fmt.Println()
 }
 
 func saveTablesToCSV(ta *TextAnalysis, outputDir string) {
-	// Базовое имя файла
 	baseName := ta.Filename
 
-	// 1. Таблица одиночных
+	// 1. Таблица одиночных (Вероятности)
 	fPath1 := filepath.Join(outputDir, baseName+"_single.csv")
 	f1, _ := os.Create(fPath1)
 	defer f1.Close()
 	w1 := bufio.NewWriter(f1)
-
 	fmt.Fprintln(w1, "Char;Probability")
 	for _, r := range ta.Alphabet {
 		fmt.Fprintf(w1, "%c;%.6f\n", r, ta.CharProbs[r])
@@ -320,13 +298,11 @@ func saveTablesToCSV(ta *TextAnalysis, outputDir string) {
 	f2, _ := os.Create(fPath2)
 	defer f2.Close()
 	w2 := bufio.NewWriter(f2)
-
 	fmt.Fprint(w2, ";")
 	for _, r := range ta.Alphabet {
 		fmt.Fprintf(w2, "%c;", r)
 	}
 	fmt.Fprintln(w2)
-
 	for _, r1 := range ta.Alphabet {
 		fmt.Fprintf(w2, "%c;", r1)
 		for _, r2 := range ta.Alphabet {
@@ -342,13 +318,11 @@ func saveTablesToCSV(ta *TextAnalysis, outputDir string) {
 	f3, _ := os.Create(fPath3)
 	defer f3.Close()
 	w3 := bufio.NewWriter(f3)
-
 	fmt.Fprint(w3, ";")
 	for _, r := range ta.Alphabet {
 		fmt.Fprintf(w3, "%c;", r)
 	}
 	fmt.Fprintln(w3)
-
 	for _, r1 := range ta.Alphabet {
 		fmt.Fprintf(w3, "%c;", r1)
 		for _, r2 := range ta.Alphabet {
@@ -359,5 +333,23 @@ func saveTablesToCSV(ta *TextAnalysis, outputDir string) {
 	}
 	w3.Flush()
 
-	fmt.Printf("Файлы сохранены: %s ...\n", fPath1)
+	// 4. ГИСТОГРАММА (Количество символов) - ДОБАВЛЕНО
+	fPath4 := filepath.Join(outputDir, baseName+"_histogram.csv")
+	f4, err := os.Create(fPath4)
+	if err != nil {
+		fmt.Printf("Ошибка создания файла гистограммы: %v\n", err)
+	} else {
+		defer f4.Close()
+		w4 := bufio.NewWriter(f4)
+
+		fmt.Fprintln(w4, "Char;Count") // Заголовок
+		for _, r := range ta.Alphabet {
+			// Сохраняем символ и его количество
+			fmt.Fprintf(w4, "%c;%d\n", r, int(ta.CharCounts[r]))
+		}
+		w4.Flush()
+		fmt.Printf("Гистограмма сохранена в файл: %s\n", fPath4)
+	}
+	
+	fmt.Printf("Остальные файлы сохранены в папку: %s\n", outputDir)
 }

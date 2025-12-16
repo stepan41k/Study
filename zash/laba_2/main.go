@@ -1,8 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"math"
+	"os"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -18,95 +22,55 @@ func NewLCG(a, c, m, seed int) *LCG {
 }
 
 func (gen *LCG) Next() int {
-	// Формула: X_{n+1} = (a*X_n + c) mod m
 	gen.current = (gen.a*gen.current + gen.c) % gen.m
 	return gen.current
 }
 
 // --- ЧАСТЬ 2: LFSR в поле GF(2^5) ---
 
-// LFSR реализует генератор на основе матричного уравнения X_{k+1} = A * X_k
 type LFSR struct {
-	State        [5]int // Вектор состояния (биты), index 0 - младший, 4 - старший (или наоборот, зависит от интерпретации матрицы)
-	Coefficients [5]int // Коэффициенты полинома (a_{n-1} ... a_0) для первой строки матрицы
+	State        [5]int
+	Coefficients [5]int
 }
 
-// NewLFSR инициализирует генератор.
-// polyCoeffs - коэффициенты при степенях x^4, x^3, x^2, x^1, x^0.
-// Например, для x^5 + x + 1 (т.е. 1*x^1 + 1*x^0) -> [0, 0, 0, 1, 1]
 func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
 	lfsr := &LFSR{
 		Coefficients: polyCoeffs,
 	}
-	// Преобразуем числовое зерно (seed) в битовый вектор
-	// Предполагаем seed от 1 до 31
 	if seedVal == 0 {
-		seedVal = 1 // Нулевое состояние для LFSR недопустимо (зациклится на 0)
+		seedVal = 1
 	}
 	for i := 0; i < 5; i++ {
 		lfsr.State[i] = (seedVal >> i) & 1
 	}
-	// Важно: По заданию матрица A имеет вид:
-	// Строка 0: a4 a3 a2 a1 a0
-	// Строка 1: 1  0  0  0  0
-	// ...
-	// Это значит вектор X_k должен интерпретироваться как столбец.
-	// Примем State[4] как верхний элемент, State[0] как нижний.
-	
 	return lfsr
 }
 
 func (gen *LFSR) Next() int {
-	// Сохраняем текущее состояние для вывода числа
-	// Преобразуем биты в число 1-32
 	val := 0
 	for i := 0; i < 5; i++ {
 		val |= gen.State[i] << i
 	}
 	
-	// Вычисляем следующее состояние: X_{k+1} = A * X_k
-	// Матрица A (по заданию):
-	// [ a4 a3 a2 a1 a0 ]
-	// [ 1  0  0  0  0  ]
-	// [ 0  1  0  0  0  ]
-	// [ 0  0  1  0  0  ]
-	// [ 0  0  0  1  0  ]
-	
-	// Вектор X_k = [x4, x3, x2, x1, x0]^T (где x4 - верхний)
-	// В нашей структуре State[4] это x4.
-	
 	newState := [5]int{}
-	
-	// 1. Вычисляем верхний элемент (первая строка матрицы умножается на столбец)
-	// new_x4 = sum(ai * xi) mod 2
 	topBit := 0
 	for i := 0; i < 5; i++ {
-		// Coefficients идут как a4, a3, a2, a1, a0
-		// State мы храним так, что State[4] это x4.
-		// Индекс i=0 соответствует a4 и x4.
 		coeffIdx := i 
 		stateIdx := 4 - i 
-		
 		topBit ^= (gen.Coefficients[coeffIdx] * gen.State[stateIdx])
 	}
 	newState[4] = topBit & 1
 	
-	// 2. Остальные элементы - это сдвиг (умножение на единичную поддиагональ)
-	// new_x3 = x4
-	// new_x2 = x3
-	// ...
 	newState[3] = gen.State[4]
 	newState[2] = gen.State[3]
 	newState[1] = gen.State[2]
 	newState[0] = gen.State[1]
 	
 	gen.State = newState
-	
-	// Возвращаем числовое значение (коррекция +1, чтобы диапазон был 1-32)
 	return val + 1
 }
 
-// --- ЧАСТЬ 3: Анализатор (Гистограмма и Энтропия) ---
+// --- ЧАСТЬ 3: Анализатор и Экспорт ---
 
 type AnalysisResult struct {
 	Counts  map[int]float64
@@ -126,7 +90,6 @@ func AnalyzeSequence(seq []int) AnalysisResult {
 		res.Counts[num]++
 	}
 	
-	// Энтропия H(X) = - sum p(x) log2 p(x)
 	for k, v := range res.Counts {
 		p := v / float64(res.Total)
 		res.Probs[k] = p
@@ -138,47 +101,71 @@ func AnalyzeSequence(seq []int) AnalysisResult {
 	return res
 }
 
-func PrintAnalysis(title string, seq []int) {
+// saveHistogramToCSV сохраняет результаты в CSV файл
+func saveHistogramToCSV(filename string, analysis AnalysisResult) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("не удалось создать файл %s: %v", filename, err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// Записываем заголовок
+	if err := writer.Write([]string{"Value", "Probability"}); err != nil {
+		return err
+	}
+
+	// Сортируем ключи (числа), чтобы в CSV они шли по порядку
+	keys := make([]int, 0, len(analysis.Probs))
+	for k := range analysis.Probs {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	// Записываем данные
+	for _, k := range keys {
+		prob := analysis.Probs[k]
+		// Форматируем число и вероятность (6 знаков после запятой)
+		record := []string{
+			strconv.Itoa(k),
+			fmt.Sprintf("%.6f", prob),
+		}
+		if err := writer.Write(record); err != nil {
+			return err
+		}
+	}
+
+	fmt.Printf(">> Результаты сохранены в файл: %s\n", filename)
+	return nil
+}
+
+func PrintAnalysis(title string, seq []int) AnalysisResult {
 	analysis := AnalyzeSequence(seq)
 	
 	fmt.Printf("\n--- %s ---\n", title)
-	fmt.Printf("Последовательность: %v\n", seq)
-	fmt.Printf("Длина: %d\n", len(seq))
-	fmt.Printf("Энтропия: %.4f бит\n", analysis.Entropy)
+	fmt.Printf("Длина: %d, Энтропия: %.4f бит\n", len(seq), analysis.Entropy)
 	
-	// Идеальная энтропия для диапазона
-	// Для LCG диапазон зависит от m, для LFSR диапазон 32.
-	// H_max = log2(N)
-	
-	fmt.Println("Гистограмма:")
-	// Сортировка ключей для красивого вывода
+	// Консольный вывод гистограммы (опционально, можно закомментировать)
 	minVal, maxVal := 1000, -1
 	for k := range analysis.Counts {
 		if k < minVal { minVal = k }
 		if k > maxVal { maxVal = k }
 	}
-	
 	for i := minVal; i <= maxVal; i++ {
 		if p, ok := analysis.Probs[i]; ok {
-			barLen := int(p * 50) // Масштабирование
+			barLen := int(p * 20) // Уменьшил масштаб для консоли
 			fmt.Printf("%3d | %.4f | %s\n", i, p, strings.Repeat("█", barLen))
 		}
 	}
-}
-
-func min(a, b int) int {
-	if a < b { return a }
-	return b
+	return analysis
 }
 
 // --- MAIN ---
 
 func main() {
-	// 1. Работа с LCG
-	// Вариант 15 из таблицы
-	// Набор 1: a=37, c=67, m=13
-	// Набор 2: a=42, c=70, m=29
-	
+	// LCG Параметры
 	lcgParams := []struct{ a, c, m int }{
 		{37, 67, 13},
 		{42, 70, 29},
@@ -186,63 +173,55 @@ func main() {
 	
 	lengths := []int{20, 50, 100}
 	
-	fmt.Println("==========================================")
-	fmt.Println("ЗАДАНИЕ 1: Линейный конгруэнтный генератор (LCG)")
-	fmt.Println("==========================================")
+	fmt.Println("=== Генерация CSV файлов для LCG ===")
 
 	for i, p := range lcgParams {
-		fmt.Printf("\n>>> Параметры LCG #%d: a=%d, c=%d, m=%d\n", i+1, p.a, p.c, p.m)
-		
-		// Проверка условий максимального периода (для справки)
-		// (c, m) == 1 ?
-		// b = a-1 кратно p (делителям m)?
-		// Если m кратно 4, b кратно 4?
-		// Здесь мы просто запускаем генерацию.
-		
 		for _, l := range lengths {
-			gen := NewLCG(p.a, p.c, p.m, 0) // Seed 0
+			gen := NewLCG(p.a, p.c, p.m, 0)
 			seq := make([]int, 0, l)
 			for k := 0; k < l; k++ {
 				seq = append(seq, gen.Next())
 			}
 			
-			title := fmt.Sprintf("LCG (m=%d) Length=%d", p.m, l)
-			PrintAnalysis(title, seq)
+			title := fmt.Sprintf("LCG Set%d (m=%d) Len=%d", i+1, p.m, l)
+			res := PrintAnalysis(title, seq)
+
+			// Формируем имя файла: lcg_set1_m13_len20.csv
+			filename := fmt.Sprintf("lcg_set%d_m%d_len%d.csv", i+1, p.m, l)
+			if err := saveHistogramToCSV(filename, res); err != nil {
+				fmt.Println("Ошибка сохранения:", err)
+			}
 		}
 	}
 
-	fmt.Println("\n==========================================")
-	fmt.Println("ЗАДАНИЕ 2: LFSR (GF(2^5))")
-	fmt.Println("==========================================")
-	
-	// Полиномы для теста
-	// 1. x^5 + x + 1. Коэффициенты для x^4..x^0: 0, 0, 0, 1, 1
-	// 2. x^5 + x^3 + 1. Коэффициенты для x^4..x^0: 0, 1, 0, 0, 1
-	// 3. x^5 + x^4 + x^2 + x + 1. Коэффициенты: 1, 0, 1, 1, 1
+	fmt.Println("\n=== Генерация CSV файлов для LFSR ===")
 	
 	polys := []struct {
 		name   string
+		shortName string // Короткое имя для файла
 		coeffs [5]int
 	}{
-		{"x^5 + x + 1", [5]int{0, 0, 0, 1, 1}},
-		{"x^5 + x^3 + 1", [5]int{0, 1, 0, 0, 1}},
-		{"x^5 + x^4 + x^2 + x + 1", [5]int{1, 0, 1, 1, 1}},
+		{"x^5 + x + 1", "poly1", [5]int{0, 0, 0, 1, 1}},
+		{"x^5 + x^3 + 1", "poly2", [5]int{0, 1, 0, 0, 1}},
+		{"x^5 + x^4 + x^2 + x + 1", "poly3", [5]int{1, 0, 1, 1, 1}},
 	}
 
 	for _, poly := range polys {
-		fmt.Printf("\n>>> Полином: %s\n", poly.name)
-		
 		for _, l := range lengths {
-			// Seed = 1 (начальное состояние 00001)
 			gen := NewLFSR(poly.coeffs, 1) 
 			seq := make([]int, 0, l)
 			for k := 0; k < l; k++ {
 				seq = append(seq, gen.Next())
 			}
 			
-			// Ожидаемый диапазон значений: 1 - 32
-			title := fmt.Sprintf("LFSR %s Length=%d", poly.name, l)
-			PrintAnalysis(title, seq)
+			title := fmt.Sprintf("LFSR %s Len=%d", poly.name, l)
+			res := PrintAnalysis(title, seq)
+
+			// Формируем имя файла: lfsr_poly1_len20.csv
+			filename := fmt.Sprintf("lfsr_%s_len%d.csv", poly.shortName, l)
+			if err := saveHistogramToCSV(filename, res); err != nil {
+				fmt.Println("Ошибка сохранения:", err)
+			}
 		}
 	}
 }

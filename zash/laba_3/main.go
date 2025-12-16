@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -73,31 +75,45 @@ func printReport(ta *TextAnalysis) {
 	fmt.Println()
 }
 
-func printPSP(ta *TextAnalysis) {
-	fmt.Printf("\n=== АНАЛИЗ: %s ===\n", ta.Name)
-	fmt.Printf("Длина текста: %.0f симв.\n", ta.TotalLen)
-	fmt.Printf("Энтропия H(A): %.4f бит (Макс для Z32 = 5.0)\n", ta.Entropy)
+// saveHistogramToCSV создает CSV файл с частотами символов для данного анализа
+func saveHistogramToCSV(ta *TextAnalysis) error {
+	// Формируем имя файла: убираем пробелы и лишние знаки из названия анализа
+	safeName := strings.ReplaceAll(ta.Name, " ", "_")
+	safeName = strings.ReplaceAll(safeName, ".", "")
+	safeName = strings.ReplaceAll(safeName, "(", "")
+	safeName = strings.ReplaceAll(safeName, ")", "")
+	safeName = strings.ReplaceAll(safeName, "=", "")
+	safeName = strings.ToLower(safeName)
 	
-	fmt.Println("Гистограмма (частоты символов):")
-	// Выводим все 32 символа
-	for i, r := range alphabetRunes {
-		prob := ta.CharProbs[r]
-		// Рисуем бар. Масштабируем: 10% = 10 символов '█'
-		barLen := int(prob * 100 * 2) 
-		bar := ""
-		if barLen > 0 {
-			bar = strings.Repeat("█", barLen)
-		} else if prob > 0 {
-			bar = "▏" // Если частота очень мала, но не 0
-		}
+	filename := fmt.Sprintf("hist_%s.csv", safeName)
+
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// Записываем заголовок
+	if err := writer.Write([]string{"Symbol", "Percent"}); err != nil {
+		return err
+	}
+
+	// Записываем данные в порядке алфавита
+	for _, r := range alphabetRunes {
+		prob := ta.CharProbs[r] * 100 // переводим в проценты
+		// Форматируем число с точностью до 4 знаков
+		sProb := strconv.FormatFloat(prob, 'f', 4, 64)
 		
-		// Форматируем таблицу по 2 столбца для компактности
-		fmt.Printf("%c: %5.2f%% %-12s ", r, prob*100, bar)
-		if (i+1)%2 == 0 {
-			fmt.Println()
+		if err := writer.Write([]string{string(r), sProb}); err != nil {
+			return err
 		}
 	}
-	fmt.Println()
+
+	fmt.Printf("-> CSV сохранен: %s\n", filename)
+	return nil
 }
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
@@ -117,8 +133,6 @@ func cleanText(text string) string {
 }
 
 func saveToFile(filename string, content string) error {
-	// os.WriteFile создает файл, если его нет, или перезаписывает, если он есть.
-	// 0644 - это стандартные права доступа для файла.
 	return os.WriteFile(filename, []byte(content), 0644)
 }
 
@@ -199,19 +213,17 @@ func encryptAdditive(text string, kg KeyGen) string {
 	return sb.String()
 }
 
-// --- ГЕНЕРАТОР ПСП (LFSR) ИЗ РАБОТЫ 2 ---
+// --- ГЕНЕРАТОР ПСП (LFSR) ---
 
-// LFSR реализует генератор на основе матричного уравнения X_{k+1} = A * X_k
 type LFSR struct {
-	State        [5]int // Вектор состояния (биты)
-	Coefficients [5]int // Коэффициенты полинома для первой строки матрицы
+	State        [5]int
+	Coefficients [5]int
 }
 
-// NewLFSR инициализирует генератор.
 func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
 	lfsr := &LFSR{Coefficients: polyCoeffs}
 	if seedVal == 0 {
-		seedVal = 1 // Нулевое состояние недопустимо
+		seedVal = 1
 	}
 	for i := 0; i < 5; i++ {
 		lfsr.State[i] = (seedVal >> i) & 1
@@ -219,7 +231,6 @@ func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
 	return lfsr
 }
 
-// Next вычисляет следующее состояние и возвращает числовое значение [1, 32].
 func (gen *LFSR) Next() int {
 	val := 0
 	for i := 0; i < 5; i++ {
@@ -239,12 +250,9 @@ func (gen *LFSR) Next() int {
 	return val + 1
 }
 
-// createLfsrKeyGen "адаптирует" LFSR для использования в функции шифрования.
 func createLfsrKeyGen(polyCoeffs [5]int, seed int) KeyGen {
 	lfsr := NewLFSR(polyCoeffs, seed)
 	return func(i int) int {
-		// lfsr.Next() возвращает значение в диапазоне [1, 32].
-		// Для шифрования нужен ключ в диапазоне [0, 31].
 		return lfsr.Next() - 1
 	}
 }
@@ -257,60 +265,54 @@ func main() {
 	sourceBytes, err := os.ReadFile(sourceFilename)
 	if err != nil {
 		fmt.Printf("ОШИБКА: Не удалось прочитать исходный файл '%s'.\n", sourceFilename)
-		fmt.Println("Пожалуйста, создайте этот файл в одной папке с программой и поместите в него текст для шифрования.")
-		fmt.Printf("Детали ошибки: %v\n", err)
-		return // Завершаем программу, если файл не найден
+		fmt.Println("Пожалуйста, создайте этот файл и поместите в него текст для шифрования.")
+		return
 	}
 	sourceText := string(sourceBytes)
-
 	fullText := sourceText
-	// if len([]rune(cleanText(fullText))) > 1000 {
-	// 	runes := []rune(cleanText(fullText))
-	// 	fullText = string(runes[:1000])
-	// }
-	
+
 	fmt.Println("=== ИСХОДНЫЕ ДАННЫЕ ===")
 	fmt.Printf("Текст загружен (%d символов после очистки).\n", len([]rune(cleanText(fullText))))
 
 	var reports []*TextAnalysis
 
-	// --- ВЫПОЛНЕНИЕ ЗАДАНИЯ 1: Плейфейер ---
+	// --- АНАЛИЗ ИСХОДНОГО ТЕКСТА ---
+	reports = append(reports, analyzeText("Исходный текст", fullText))
+
+	// --- 1: Плейфейер ---
 	keyPlayfair := "ПЛЕЙФЕЙЕР"
 	cipher1 := encryptPlayfair(fullText, keyPlayfair)
 	saveToFile("cipher_playfair.txt", cipher1)
-	reports = append(reports, analyzeText("1. Шифр Плейфейера", encryptPlayfair(fullText, keyPlayfair)))
+	reports = append(reports, analyzeText("1. Шифр Плейфейера", cipher1))
 
-	// --- ВЫПОЛНЕНИЕ ЗАДАНИЯ 2: Аддитивные шифры ---
-	
-	// 2.1 Константа
+	// --- 2.1 Константа ---
 	cipher2_1 := encryptAdditive(fullText, func(i int) int { return 15 })
 	saveToFile("cipher_const.txt", cipher2_1)
-	reports = append(reports, analyzeText("2.1 Гаммирование (Const=15)", encryptAdditive(fullText, func(i int) int { return 15 })))
+	reports = append(reports, analyzeText("2.1 Гаммирование (Const=15)", cipher2_1))
 
-	// 2.2 Поговорка
+	// --- 2.2 Поговорка ---
 	proverb := "Пуст мешок стоять не будет"
 	proverbClean := []rune(cleanText(proverb))
-	cipher2_2 := encryptAdditive(fullText, func(i int) int { return alphaMap[proverbClean[i%len(proverbClean)]] })
+	cipher2_2 := encryptAdditive(fullText, func(i int) int { 
+		return alphaMap[proverbClean[i%len(proverbClean)]] 
+	})
 	saveToFile("cipher_proverb.txt", cipher2_2)
-	reports = append(reports, analyzeText("2.2 Гаммирование (Поговорка)", encryptAdditive(fullText, func(i int) int {
-		return alphaMap[proverbClean[i%len(proverbClean)]]
-	})))
+	reports = append(reports, analyzeText("2.2 Гаммирование (Поговорка)", cipher2_2))
 
-	// 2.3 ПСП (LFSR из работы 2)
-	// Используем полином x^5 + x^3 + 1. Коэффициенты для x^4,x^3,x^2,x^1,x^0: [0, 1, 0, 0, 1]
-	poly := [5]int{0, 1, 0, 0, 1} 
-	seed := rand.Intn(31) + 1 // Любое число от 1 до 31
+	// --- 2.3 ПСП (LFSR) ---
+	poly := [5]int{0, 1, 0, 0, 1}
+	seed := rand.Intn(31) + 1
 	lfsrKeyGen := createLfsrKeyGen(poly, seed)
 	cipher2_3 := encryptAdditive(fullText, lfsrKeyGen)
 	saveToFile("cipher_lfsr.txt", cipher2_3)
-	reports = append(reports, analyzeText("2.3 Гаммирование (ПСП LFSR)", encryptAdditive(fullText, lfsrKeyGen)))
+	reports = append(reports, analyzeText("2.3 Гаммирование (ПСП LFSR)", cipher2_3))
 
-	// --- АНАЛИЗ ИСХОДНОГО ТЕКСТА (для сравнения) ---
-	reports = append([]*TextAnalysis{analyzeText("Исходный текст", fullText)}, reports...)
-
-	// --- ВЫВОД ОТЧЕТОВ (Задание 3) ---
+	// --- ВЫВОД ОТЧЕТОВ И СОХРАНЕНИЕ CSV ---
 	for _, rep := range reports {
-
 		printReport(rep)
+		// Сохранение гистограммы в CSV файл
+		if err := saveHistogramToCSV(rep); err != nil {
+			fmt.Printf("Ошибка при сохранении CSV для '%s': %v\n", rep.Name, err)
+		}
 	}
 }

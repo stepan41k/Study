@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 // AlphabetMap содержит отображение русских букв в 5-битные числа (0-31)
 var AlphabetMap map[rune]uint8
+
 // ReverseAlphabetMap содержит обратное отображение для декодирования
 var ReverseAlphabetMap map[uint8]rune
 
@@ -18,11 +20,9 @@ func initializeMaps() {
 	AlphabetMap = make(map[rune]uint8)
 	ReverseAlphabetMap = make(map[uint8]rune)
 	alphabet := "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-	
-	// ВАЖНО: Преобразуем строку в срез рун, чтобы индексы шли по порядку (0, 1, 2...),
-	// а не по байтам (0, 2, 4...).
+
 	runes := []rune(alphabet)
-	
+
 	for i, r := range runes {
 		AlphabetMap[r] = uint8(i)
 		ReverseAlphabetMap[uint8(i)] = r
@@ -44,7 +44,6 @@ func NewFeistelCipher(password string) (*FeistelCipher, error) {
 			builder.WriteRune(r)
 		}
 	}
-	
 
 	runes := []rune(builder.String())
 
@@ -65,7 +64,6 @@ func NewFeistelCipher(password string) (*FeistelCipher, error) {
 	return &FeistelCipher{roundKeys: keys}, nil
 }
 
-
 // fFunction - раундовая функция F.
 func (fc *FeistelCipher) fFunction(r, key uint8) uint8 {
 	sum := (r + key) & 0x1F
@@ -83,7 +81,7 @@ func combineHalves(l, r uint8) uint16 {
 	return (uint16(l) << 5) | uint16(r)
 }
 
-// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ШИФРОВАНИЯ ---
+// EncryptBlock - функция шифрования блока
 func (fc *FeistelCipher) EncryptBlock(block uint16) uint16 {
 	l, r := splitBlock(block)
 	for i := 0; i < 8; i++ {
@@ -95,7 +93,7 @@ func (fc *FeistelCipher) EncryptBlock(block uint16) uint16 {
 	return combineHalves(l, r)
 }
 
-// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЕШИФРОВАНИЯ ---
+// DecryptBlock - функция дешифрования блока
 func (fc *FeistelCipher) DecryptBlock(block uint16) uint16 {
 	l, r := splitBlock(block)
 	for i := 7; i >= 0; i-- {
@@ -107,19 +105,19 @@ func (fc *FeistelCipher) DecryptBlock(block uint16) uint16 {
 	return combineHalves(l, r)
 }
 
-// --- ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАДАНИЯ 1 ---
+// EncryptAndRecordRounds - шифрование с записью результатов каждого раунда
 func EncryptAndRecordRounds(fc *FeistelCipher, plaintextBlocks []uint16) map[int][]uint16 {
-    roundResults := make(map[int][]uint16)
+	roundResults := make(map[int][]uint16)
 	currentBlocks := make([]uint16, len(plaintextBlocks))
 	copy(currentBlocks, plaintextBlocks)
-	for i := 0; i < 8; i++ { 
+	for i := 0; i < 8; i++ {
 		nextBlocks := make([]uint16, len(currentBlocks))
 		for j, block := range currentBlocks {
 			l, r := splitBlock(block)
 			l_prev := l
-            f_result := fc.fFunction(r, fc.roundKeys[i])
-            l = r
-            r = l_prev ^ f_result
+			f_result := fc.fFunction(r, fc.roundKeys[i])
+			l = r
+			r = l_prev ^ f_result
 			nextBlocks[j] = combineHalves(l, r)
 		}
 		currentBlocks = nextBlocks
@@ -130,11 +128,8 @@ func EncryptAndRecordRounds(fc *FeistelCipher, plaintextBlocks []uint16) map[int
 	return roundResults
 }
 
+// --- Утилиты ---
 
-
-// --- Утилиты для текста и блоков ---
-
-// prepareText очищает и подготавливает текст для шифрования.
 func prepareText(text string) string {
 	text = strings.ToUpper(text)
 	var builder strings.Builder
@@ -150,11 +145,10 @@ func prepareText(text string) string {
 	return builder.String()
 }
 
-// textToBlocks преобразует строку в срез 10-битных блоков.
 func textToBlocks(text string) ([]uint16, error) {
 	preparedText := prepareText(text)
 	runes := []rune(preparedText)
-	
+
 	if len(runes)%2 != 0 {
 		return nil, fmt.Errorf("длина подготовленного текста должна быть четной")
 	}
@@ -177,8 +171,6 @@ func textToBlocks(text string) ([]uint16, error) {
 	return blocks, nil
 }
 
-
-// blocksToText преобразует срез 10-битных блоков обратно в строку.
 func blocksToText(blocks []uint16) string {
 	var builder strings.Builder
 	for _, block := range blocks {
@@ -186,11 +178,9 @@ func blocksToText(blocks []uint16) string {
 		builder.WriteRune(ReverseAlphabetMap[l])
 		builder.WriteRune(ReverseAlphabetMap[r])
 	}
-
 	return builder.String()
 }
 
-// blocksToSymbols преобразует срез 10-битных блоков в срез 5-битных символов для гистограммы.
 func blocksToSymbols(blocks []uint16) []uint8 {
 	symbols := make([]uint8, len(blocks)*2)
 	for i, block := range blocks {
@@ -201,26 +191,53 @@ func blocksToSymbols(blocks []uint16) []uint8 {
 	return symbols
 }
 
-// printHistogram выводит частотную гистограмму.
+// printHistogram выводит гистограмму в консоль (для наглядности)
 func printHistogram(title string, symbols []uint8) {
 	fmt.Println(title)
-
-	if len(ReverseAlphabetMap) == 0 {
-		fmt.Println("Ошибка: Алфавит не инициализирован.")
-		return
-	}
-
 	counts := make(map[uint8]int)
 	for _, s := range symbols {
 		counts[s]++
 	}
-
 	totalSymbols := float64(len(symbols))
 	if totalSymbols == 0 {
-		fmt.Println("Нет данных для построения гистограммы.")
 		return
 	}
+	for i := uint8(0); i < 32; i++ {
+		char, ok := ReverseAlphabetMap[i]
+		if !ok {
+			continue
+		}
+		prob := float64(counts[i]) / totalSymbols
+		barLen := int(prob * 50)
+		bar := strings.Repeat("█", barLen)
+		fmt.Printf("%c | %.5f | %s\n", char, prob, bar)
+	}
+	fmt.Println()
+}
 
+// saveHistogramToCSV сохраняет в файл только СИМВОЛ и ВЕРОЯТНОСТЬ
+func saveHistogramToCSV(filename string, symbols []uint8) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	// Считаем количество вхождений
+	counts := make(map[uint8]int)
+	for _, s := range symbols {
+		counts[s]++
+	}
+	totalSymbols := float64(len(symbols))
+	
+	if totalSymbols == 0 {
+		return nil
+	}
+
+	// Проходим по алфавиту от А до Я (0-31)
 	for i := uint8(0); i < 32; i++ {
 		char, ok := ReverseAlphabetMap[i]
 		if !ok {
@@ -229,15 +246,21 @@ func printHistogram(title string, symbols []uint8) {
 
 		count := counts[i]
 		prob := float64(count) / totalSymbols
-		barLen := int(prob * 100)
-		bar := strings.Repeat("█", barLen)
 
-		// Диапазон [1, 32] в задании, поэтому i+1
-		fmt.Printf("Символ %2d ('%c') | %.4f | %s\n", i+1, char, prob, bar)
+		// Записываем строку: Символ, Вероятность
+		record := []string{
+			string(char),              // Символ (А, Б, В...)
+			fmt.Sprintf("%.5f", prob), // Вероятность (0.02646)
+		}
+
+		if err := writer.Write(record); err != nil {
+			return err
+		}
 	}
-	fmt.Println()
+	
+	fmt.Printf("Файл сохранен: %s\n", filename)
+	return nil
 }
-
 
 // ЗАДАНИЕ 2: РЕЖИМЫ ШИФРОВАНИЯ
 
@@ -319,91 +342,62 @@ func decryptOFB(fc *FeistelCipher, ciphertext []uint16, iv uint16) []uint16 {
 	return encryptOFB(fc, ciphertext, iv)
 }
 
-
 func main() {
 	initializeMaps()
 
-	const password = "Пуст мешок стоять не будет" 
-
+	const password = "Пуст мешок стоять не будет"
 	const sourceFilename = "source.txt"
+
 	sourceBytes, err := os.ReadFile(sourceFilename)
 	if err != nil {
-		fmt.Printf("ОШИБКА: Не удалось прочитать исходный файл '%s'.\n", sourceFilename)
-		fmt.Println("Пожалуйста, создайте этот файл в одной папке с программой и поместите в него текст для шифрования.")
-		fmt.Printf("Детали ошибки: %v\n", err)
-		return // Завершаем программу, если файл не найден
+		fmt.Printf("ОШИБКА: Файл '%s' не найден. Создайте его и добавьте текст.\n", sourceFilename)
+		return
 	}
 
 	sourceText := string(sourceBytes)
-
 	fmt.Printf("Исходный текст: %s\n", sourceText)
-	fmt.Printf("Пароль: %s\n\n", password)
 
 	fc, err := NewFeistelCipher(password)
 	if err != nil {
 		fmt.Println("Ошибка:", err)
 		return
 	}
-	
-	// --- ИЗМЕНЕННЫЙ БЛОК ЗАДАНИЯ 1 ---
-	fmt.Println("--- ЗАДАНИЕ 1: ПОСТРОЕНИЕ ГИСТОГРАММ ПО РАУНДАМ ---")
-	
+
 	allBlocks, err := textToBlocks(sourceText)
 	if err != nil {
 		fmt.Println("Ошибка:", err)
 		return
 	}
-	
-	// Получаем результаты шифрования после каждого из 8 раундов
+
+	// --- ЗАДАНИЕ 1: Сохранение по раундам ---
+	fmt.Println("--- ЗАДАНИЕ 1 ---")
 	roundData := EncryptAndRecordRounds(fc, allBlocks)
 
-	// Последовательно выводим гистограммы для каждого раунда
 	for i := 1; i <= 8; i++ {
-		title := fmt.Sprintf("Гистограмма после раунда %d:", i)
-		// Преобразуем блоки этого раунда в последовательность 5-битных символов
 		symbols := blocksToSymbols(roundData[i])
-		printHistogram(title, symbols)
+		csvFilename := fmt.Sprintf("histogram_round_%d.csv", i)
+		saveHistogramToCSV(csvFilename, symbols)
 	}
 
-
-	// --- ЗАДАНИЕ 2: РЕАЛИЗАЦИЯ РЕЖИМОВ ШИФРОВАНИЯ ---
-	fmt.Println("\n\n--- ЗАДАНИЕ 2: РЕЖИМЫ ШИФРОВАНИЯ ---")
-
+	// --- ЗАДАНИЕ 2: Режимы ---
+	fmt.Println("\n--- ЗАДАНИЕ 2 ---")
 	const iv uint16 = 819
 
-	// 1. Режим ECB
-	fmt.Println("--- 1. Режим ECB (Electronic Codebook) ---")
-	ecbCiphertextBlocks := encryptECB(fc, allBlocks)
-	ecbDecryptedBlocks := decryptECB(fc, ecbCiphertextBlocks)
-	fmt.Println("Зашифрованный текст:", blocksToText(ecbCiphertextBlocks))
-	printHistogram("Гистограмма для итогового шифротекста ECB:", blocksToSymbols(ecbCiphertextBlocks))
-	fmt.Println("Расшифрованный текст:", blocksToText(ecbDecryptedBlocks))
-	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(ecbDecryptedBlocks))
-
-	// 2. Режим CBC
-	fmt.Println("\n--- 2. Режим CBC (Cipher Block Chaining) ---")
-	cbcCiphertextBlocks := encryptCBC(fc, allBlocks, iv)
-	cbcDecryptedBlocks := decryptCBC(fc, cbcCiphertextBlocks, iv)
-	fmt.Println("Зашифрованный текст:", blocksToText(cbcCiphertextBlocks))
-	printHistogram("Гистограмма для шифротекста CBC:", blocksToSymbols(cbcCiphertextBlocks))
-	fmt.Println("Расшифрованный текст:", blocksToText(cbcDecryptedBlocks))
-	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(cbcDecryptedBlocks))
+	// ECB
+	ecbCipher := encryptECB(fc, allBlocks)
+	saveHistogramToCSV("histogram_ecb.csv", blocksToSymbols(ecbCipher))
 	
-	// 3. Режим CFB
-	fmt.Println("\n--- 3. Режим CFB (Cipher Feedback) ---")
-	cfbCiphertextBlocks := encryptCFB(fc, allBlocks, iv)
-	cfbDecryptedBlocks := decryptCFB(fc, cfbCiphertextBlocks, iv)
-	fmt.Println("Зашифрованный текст:", blocksToText(cfbCiphertextBlocks))
-	printHistogram("Гистограмма для шифротекста CFB:", blocksToSymbols(cfbCiphertextBlocks))
-	fmt.Println("Расшифрованный текст:", blocksToText(cfbDecryptedBlocks))
-	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(cfbDecryptedBlocks))
+	// CBC
+	cbcCipher := encryptCBC(fc, allBlocks, iv)
+	saveHistogramToCSV("histogram_cbc.csv", blocksToSymbols(cbcCipher))
 
-	// 4. Режим OFB
-	fmt.Println("\n--- 4. Режим OFB (Output Feedback) ---")
-	ofbCiphertextBlocks := encryptOFB(fc, allBlocks, iv)
-	ofbDecryptedBlocks := decryptOFB(fc, ofbCiphertextBlocks, iv)
-	fmt.Println("Зашифрованный текст:", blocksToText(ofbCiphertextBlocks))
-	printHistogram("Гистограмма для шифротекста OFB:", blocksToSymbols(ofbCiphertextBlocks))
-	fmt.Println("Расшифрованный текст:", blocksToText(ofbDecryptedBlocks))
-	fmt.Println("Проверка:", prepareText(sourceText) == blocksToText(ofbDecryptedBlocks))
+	// CFB
+	cfbCipher := encryptCFB(fc, allBlocks, iv)
+	saveHistogramToCSV("histogram_cfb.csv", blocksToSymbols(cfbCipher))
+
+	// OFB
+	ofbCipher := encryptOFB(fc, allBlocks, iv)
+	saveHistogramToCSV("histogram_ofb.csv", blocksToSymbols(ofbCipher))
+
+	fmt.Println("\nВсе файлы успешно созданы.")
 }
