@@ -410,28 +410,50 @@ OR REPLACE PROCEDURE fill_accounting_cursor () LANGUAGE plpgsql AS $$
 
 --             4.4.12. *(полиморфная функция RETURNS anyelement) Создайте функцию (id int, nm text), которая будет возвращать разную информацию в зависимости от типа от типа переданной сущности и типа операции для таблиц Ментор, Студент, Проект – для ментора и студента – количество проектов, для таблицы Проект – список ресурсов.
 CREATE
-OR REPLACE FUNCTION get_info_polymorph (p_id INT, p_table_name TEXT) RETURNS TEXT LANGUAGE plpgsql AS $$
-                DECLARE
-                    result TEXT;
-                BEGIN
-                    IF p_table_name = 'mentor' OR p_table_name = 'student' THEN
-                        -- Количество проектов
-                        SELECT COUNT(p.id)::TEXT INTO result
-                        FROM z5_project p 
-                        WHERE (p_table_name = 'mentor' AND p.mentor_id = p_id)
-                        OR (p_table_name = 'student' AND p.idcommand = (SELECT idcommand FROM z5_student WHERE id = p_id));
-                        
-                    ELSIF p_table_name = 'project' THEN
-                        -- Список ресурсов
-                        SELECT STRING_AGG(resource, ', ') INTO result
-                        FROM z5_resource WHERE idproject = p_id;
-                    ELSE
-                        result := 'Unknown entity';
-                    END IF;
+OR REPLACE FUNCTION z5_get_entity_info (search_id INT, entity_sample anyelement) RETURNS TEXT AS $$
+            DECLARE
+                v_result TEXT;
+                v_type TEXT := pg_typeof(entity_sample)::TEXT;
+            BEGIN
+                -- 1. Логика для СТУДЕНТА (Считаем проекты команды, в которой состоит студент)
+                IF v_type LIKE '%z5_student' THEN
+                    SELECT COUNT(p.id)::TEXT INTO v_result
+                    FROM z5_student s
+                    JOIN z5_project p ON s.idcommand = p.idcommand
+                    WHERE s.id = search_id;
                     
-                    RETURN result;
-                END;
-                $$;
+                    RETURN 'Количество проектов студента: ' || COALESCE(v_result, '0');
+
+                -- 2. Логика для МЕНТОРА (Считаем проекты, где он указан как mentor_id)
+                ELSIF v_type LIKE '%z5_mentor' THEN
+                    SELECT COUNT(id)::TEXT INTO v_result
+                    FROM z5_project
+                    WHERE mentor_id = search_id;
+                    
+                    RETURN 'Количество проектов ментора: ' || COALESCE(v_result, '0');
+
+                -- 3. Логика для ПРОЕКТА (Список ресурсов из таблицы z5_resource)
+                ELSIF v_type LIKE '%z5_project' THEN
+                    SELECT string_agg(resource, ', ') INTO v_result
+                    FROM z5_resource
+                    WHERE idproject = search_id;
+                    
+                    RETURN 'Ресурсы проекта: ' || COALESCE(v_result, 'Нет ресурсов');
+
+                ELSE
+                    RETURN 'Неизвестный тип сущности';
+                END IF;
+            END;
+            $$ LANGUAGE plpgsql;
+
+SELECT
+    z5_get_entity_info (3, NULL::z5_student);
+
+SELECT
+    z5_get_entity_info (3, NULL::z5_mentor);
+
+SELECT
+    z5_get_entity_info (1, NULL::z5_project);
 
 --             4.4.13. *(QUERY LATERAL join с функциями) Создайте функцию с использованием LATERAL, которая для команд показывает проекты за указанный период.
 CREATE
@@ -522,18 +544,19 @@ DO $$
                     RAISE NOTICE '4.1.2 Cost Test (150.5 * 4): %', v_total;
 
                     -- 2. Тест процедуры 4.2.2
-                    CALL get_project_name_by_shifr('PRJ-1234', v_out_name);
-                    RAISE NOTICE '4.2.2 Project Name for PRJ-1234: %', v_out_name;
+                    CALL get_project_name_by_shifr('PR0113', v_out_name);
+                    RAISE NOTICE '4.2.2 Project Name for PR-0113: %', v_out_name;
 
                     -- 3. Тест функции 4.4.1
-                    v_cnt := count_projects_by_team_month('Alpha Team', 1); -- Январь
-                    RAISE NOTICE '4.4.1 Alpha Team projects in Jan: %', v_cnt;
+                    v_cnt := count_projects_by_team_month('Omega', 1); -- Январь
+                    RAISE NOTICE '4.4.1 Omega projects in Jan: %', v_cnt;
 
                     -- 4. Тест функции 4.4.2
-                    v_max_prj := get_max_price_project_name('Alpha Team');
-                    RAISE NOTICE '4.4.2 Alpha Team max price project: %', v_max_prj;
+                    v_max_prj := get_max_price_project_name('A&B');
+                    RAISE NOTICE '4.4.2 A&B max price project: %', v_max_prj;
                     
                     -- 5. Тест процедуры (4.1.1)
+                    RAISE NOTICE '4.1.1';
                     CALL current_time_n(2); 
 
                     RAISE NOTICE '--- END DEBUGGING ---';
