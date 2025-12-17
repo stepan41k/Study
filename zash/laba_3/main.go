@@ -4,14 +4,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"math"
-	"math/rand"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
-// --- ГЛОБАЛЬНЫЕ КОНСТАНТЫ ---
 
 var alphabetRunes = []rune("АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
 var alphaMap map[rune]int
@@ -23,7 +22,6 @@ func init() {
 	}
 }
 
-// --- СТРУКТУРЫ ДЛЯ АНАЛИЗА ---
 
 type TextAnalysis struct {
 	Name      string
@@ -32,7 +30,6 @@ type TextAnalysis struct {
 	Entropy   float64
 }
 
-// --- ФУНКЦИИ АНАЛИЗА ---
 
 func analyzeText(name string, text string) *TextAnalysis {
 	clean := cleanText(text)
@@ -216,38 +213,53 @@ func encryptAdditive(text string, kg KeyGen) string {
 // --- ГЕНЕРАТОР ПСП (LFSR) ---
 
 type LFSR struct {
-	State        [5]int
-	Coefficients [5]int
+	State  [5]int    // Вектор состояния (столбец)
+	Matrix [5][5]int // Переходная матрица 5x5
 }
 
 func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
-	lfsr := &LFSR{Coefficients: polyCoeffs}
-	if seedVal == 0 {
+	lfsr := &LFSR{}
+
+	// Защита от нулевого начального состояния (для LFSR состояние "все нули" часто стационарно)
+	if (seedVal & 0x1F) == 0 {
 		seedVal = 1
+		fmt.Println("Warning: Seed low bits were 0, forced to 1 to avoid stuck state.")
 	}
+
 	for i := 0; i < 5; i++ {
 		lfsr.State[i] = (seedVal >> i) & 1
 	}
+
+	// Формирование матрицы (сдвиг + обратная связь)
+	for r := 0; r < 4; r++ {
+		lfsr.Matrix[r][r+1] = 1
+	}
+	for i := 0; i < 5; i++ {
+		lfsr.Matrix[4][i] = polyCoeffs[4-i]
+	}
+
 	return lfsr
 }
 
 func (gen *LFSR) Next() int {
+	var newState [5]int
+	// Умножение матрицы на вектор
+	for r := 0; r < 5; r++ {
+		sum := 0
+		for c := 0; c < 5; c++ {
+			sum += gen.Matrix[r][c] * gen.State[c]
+		}
+		newState[r] = sum % 2
+	}
+	gen.State = newState
+
+	// Перевод битов состояния в число
 	val := 0
 	for i := 0; i < 5; i++ {
 		val |= gen.State[i] << i
 	}
-	newState := [5]int{}
-	topBit := 0
-	for i := 0; i < 5; i++ {
-		topBit ^= (gen.Coefficients[i] * gen.State[4-i])
-	}
-	newState[4] = topBit & 1
-	newState[3] = gen.State[4]
-	newState[2] = gen.State[3]
-	newState[1] = gen.State[2]
-	newState[0] = gen.State[1]
-	gen.State = newState
-	return val + 1
+
+	return val
 }
 
 func createLfsrKeyGen(polyCoeffs [5]int, seed int) KeyGen {
@@ -257,7 +269,6 @@ func createLfsrKeyGen(polyCoeffs [5]int, seed int) KeyGen {
 	}
 }
 
-// --- MAIN ---
 
 func main() {
 	// 0. Подготовка данных
@@ -276,7 +287,6 @@ func main() {
 
 	var reports []*TextAnalysis
 
-	// --- АНАЛИЗ ИСХОДНОГО ТЕКСТА ---
 	reports = append(reports, analyzeText("Исходный текст", fullText))
 
 	// --- 1: Плейфейер ---
@@ -301,8 +311,8 @@ func main() {
 
 	// --- 2.3 ПСП (LFSR) ---
 	poly := [5]int{0, 1, 0, 0, 1}
-	seed := rand.Intn(31) + 1
-	lfsrKeyGen := createLfsrKeyGen(poly, seed)
+	seed := int(time.Now().UnixNano()) 
+	lfsrKeyGen := createLfsrKeyGen(poly, seed+1)
 	cipher2_3 := encryptAdditive(fullText, lfsrKeyGen)
 	saveToFile("cipher_lfsr.txt", cipher2_3)
 	reports = append(reports, analyzeText("2.3 Гаммирование (ПСП LFSR)", cipher2_3))

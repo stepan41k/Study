@@ -333,7 +333,7 @@ func saveTablesToCSV(ta *TextAnalysis, outputDir string) {
 	}
 	w3.Flush()
 
-	// 4. ГИСТОГРАММА (Количество символов) - ДОБАВЛЕНО
+	// 4. ГИСТОГРАММА (Количество символов)
 	fPath4 := filepath.Join(outputDir, baseName+"_histogram.csv")
 	f4, err := os.Create(fPath4)
 	if err != nil {

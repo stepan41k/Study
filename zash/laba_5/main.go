@@ -6,7 +6,6 @@ import (
 	"strings"
 )
 
-// Структура для хранения параметров из таблицы
 type TaskParams struct {
 	N *big.Int
 	E *big.Int
@@ -156,7 +155,7 @@ func solveRSA(studentID int) {
 	// --- Шаг 1: Определение ключей участников ---
 	fmt.Println("\n--- Шаг 1: Определение ключей (открытых и закрытых) ---")
 	
-	// Ключи отправителя (Алиса)
+	// Ключи отправителя
 	n_A, e_A := senderParams.N, senderParams.E
 	p_A, q_A := factorize(n_A)
 	one := big.NewInt(1)
@@ -168,7 +167,7 @@ func solveRSA(studentID int) {
 	fmt.Printf("  Функция Эйлера: φ(nA) = (%v-1)*(%v-1) = %v\n", p_A, q_A, phi_A)
 	fmt.Printf("  Закрытый ключ dA (eA*dA ≡ 1 mod φ(nA)) = %v\n\n", d_A)
 
-	// Ключи получателя (Боб)
+	// Ключи получателя 
 	n_B, e_B := recipientParams.N, recipientParams.E
 	p_B, q_B := factorize(n_B)
 	phi_B := new(big.Int).Mul(new(big.Int).Sub(p_B, one), new(big.Int).Sub(q_B, one))
