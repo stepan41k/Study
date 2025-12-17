@@ -32,7 +32,7 @@ DO $$
 DO $$
                     DECLARE
                         v_price NUMERIC := 10000;
-                        v_cur INT := 1; -- 0: USD, 1: RUB (задаем значение)
+                        v_cur INT := 1; -- 0: USD, 1: RUB
                         v_exchange_rate NUMERIC := 91.5;
                         v_result NUMERIC;
                     BEGIN
@@ -142,7 +142,7 @@ DO $$
 -- Используя эти переменные, создать запрос, который получит стоимость заданной тематики. Вывести суммарную стоимость, а также количество проектов.
 DO $$
                     DECLARE
-                        v_topic z5_project.project_type%TYPE := 'IT';
+                        v_topic z5_project.project_type%TYPE := 'коммерческий';
                         v_total_price z5_project.price%TYPE;
                         v_day_cost numeric(10,2);
                         v_count int;
@@ -228,7 +228,7 @@ DO $$
 DO $$
                     DECLARE
                         x NUMERIC := 0.5;
-                        p NUMERIC := 1.0;
+                        p DECIMAL(10,4) := 1.0;
                         i INT := 1;
                         a_i NUMERIC;
                         v_precision CONSTANT NUMERIC := 0.0001;
@@ -417,8 +417,8 @@ DO $$
 
                             RAISE NOTICE '--- Вызвана ошибка: Деление на ноль ---';
                             RAISE NOTICE 'Сообщение: %', v_error_msg;
-                            RAISE NOTICE 'Подробности: %', COALESCE(v_detail, 'Нет подробностей');
-                            RAISE NOTICE 'Подсказка: %', COALESCE(v_hint, 'Нет подсказки');
+                            -- RAISE NOTICE 'Подробности: %', COALESCE(v_detail, 'Нет подробностей');
+                            -- RAISE NOTICE 'Подсказка: %', COALESCE(v_hint, 'Нет подсказки');
                             RAISE NOTICE 'Контекст: %', v_context;
                     END $$;
 
@@ -443,7 +443,7 @@ DO $$
                         WHEN SQLSTATE 'U4504' THEN
                             RAISE NOTICE '--- ОБРАБОТКА СОБСТВЕННОГО ИСКЛЮЧЕНИЯ ---';
                             RAISE NOTICE 'Ошибка: %', SQLERRM;
-                            RAISE NOTICE 'Действие: %', PG_EXCEPTION_HINT;
+                            -- RAISE NOTICE 'Действие: %', PG_EXCEPTION_HINT;
                         WHEN OTHERS THEN
                             RAISE EXCEPTION 'Непредвиденная ошибка: %', SQLERRM;
                     END $$;
