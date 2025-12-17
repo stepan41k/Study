@@ -1,9 +1,8 @@
 -- При выполнении задания не забудьте проверять работу процедур и функций. Сделайте отладку 1 процедуры и 2-х функций по Вашему выбору. 
 --         4.1. Процедуры и функции без привязки к базе данных
 --             4.1.1. Напишите процедуру сurrent_time, которая выводит текущее время n раз, где n - параметр, задаваемый пользователем.
-                CREATE OR REPLACE PROCEDURE current_time_n(n INT)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE current_time_n (n INT) LANGUAGE plpgsql AS $$
                 DECLARE 
                     i INT;
                 BEGIN
@@ -12,23 +11,22 @@
                     END LOOP;
                 END;
                 $$;
+
 --             4.1.2. Создайте хранимую процедуру cost, которая по введённой цене товара и его количеству вычислит сумму к выдаче. 
-                CREATE OR REPLACE PROCEDURE calculate_cost(
-                    IN p_price NUMERIC, 
-                    IN p_quantity INT, 
-                    OUT p_total NUMERIC
-                )
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE calculate_cost (
+    IN p_price NUMERIC,
+    IN p_quantity INT,
+    OUT p_total NUMERIC
+) LANGUAGE plpgsql AS $$
                 BEGIN
                     p_total := p_price * p_quantity;
                 END;
                 $$;
+
 --             4.1.3. Напишите функцию, которая в зависимости от введенного значения переменной cur вычислит стоимость товара в долларах, если переменная cur=0 и в рублях, если переменная cur=1.
-                CREATE OR REPLACE FUNCTION convert_currency(val NUMERIC, cur INT)
-                RETURNS NUMERIC
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION convert_currency (val NUMERIC, cur INT) RETURNS NUMERIC LANGUAGE plpgsql AS $$
                 DECLARE
                     rate_usd_to_rub NUMERIC := 90.0;
                 BEGIN
@@ -41,11 +39,11 @@
                     END IF;
                 END;
                 $$;
+
 --         4.2. Хранимые процедуры выборки данных
 --             4.2.1. Создание процедуры сnt_project, которая подсчитывает количество записей в таблице project.
-                CREATE OR REPLACE PROCEDURE cnt_project()
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE cnt_project () LANGUAGE plpgsql AS $$
                 DECLARE
                     cnt INT;
                 BEGIN
@@ -53,13 +51,10 @@
                     RAISE NOTICE 'Количество проектов: %', cnt;
                 END;
                 $$;
+
 --             4.2.2. (Использовать входные и выходные параметры) Создайте хранимую процедуру project_name, которая по первичному ключу проекта выдаёт название проекта. Для решения задачи требуется определить параметр shifr с атрибутом IN, а параметр project_name с атрибутом OUT.
-                CREATE OR REPLACE PROCEDURE get_project_name_by_shifr(
-                    IN p_shifr VARCHAR, 
-                    OUT p_project_name VARCHAR
-                )
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE get_project_name_by_shifr (IN p_shifr VARCHAR, OUT p_project_name VARCHAR) LANGUAGE plpgsql AS $$
                 BEGIN
                     SELECT projectname INTO p_project_name 
                     FROM z5_project 
@@ -70,10 +65,10 @@
                     END IF;
                 END;
                 $$;
+
 --             4.2.3. Создание хранимой процедуры mentor_team, которая по имени ментора выводит название команд.
-                CREATE OR REPLACE PROCEDURE mentor_team(p_mentor_name VARCHAR)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE mentor_team (p_mentor_name VARCHAR) LANGUAGE plpgsql AS $$
                 DECLARE
                     rec RECORD;
                 BEGIN
@@ -87,10 +82,10 @@
                     END LOOP;
                 END;
                 $$;
+
 --             4.2.4. (4.1.3 применить процедуру использовать входные и выходные параметры). Создание хранимой процедуры, которая по введённому коду студента выведет список проектов и стоимость разработки проектов в долларах (если переменная cur=0) и в рублях (если переменная cur=1).
-                CREATE OR REPLACE PROCEDURE student_projects_cost(p_student_id INT, cur INT)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE student_projects_cost (p_student_id INT, cur INT) LANGUAGE plpgsql AS $$
                 DECLARE
                     rec RECORD;
                     converted_price NUMERIC;
@@ -112,15 +107,19 @@
                     END LOOP;
                 END;
                 $$;
+
 --             4.2.5. (домен) Создайте домен, который включает описание поля типа переменной текстовой длины не пустого с проверкой на значение поля шифра проекта (см.работу ранее). Внесите изменение в таблицу, отредактируйте определение поля. Напишите пользовательскую процедуру, которая найдёт все проекты с шифром в указанном диапазоне.
-                CREATE DOMAIN dom_shifr AS VARCHAR(6)
-                CHECK (VALUE IS NOT NULL AND VALUE ~ '^[A-Za-z0-9\-]+$');
+CREATE DOMAIN dom_shifr AS VARCHAR(6) CHECK (
+    VALUE IS NOT NULL
+    AND VALUE ~ '^[A-Za-z0-9\-]+$'
+);
 
-                ALTER TABLE z5_project ALTER COLUMN shifr TYPE dom_shifr;
+ALTER TABLE z5_project
+ALTER COLUMN shifr
+TYPE dom_shifr;
 
-                CREATE OR REPLACE PROCEDURE find_projects_in_shifr_range(start_s VARCHAR, end_s VARCHAR)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE find_projects_in_shifr_range (start_s VARCHAR, end_s VARCHAR) LANGUAGE plpgsql AS $$
                 DECLARE
                     r RECORD;
                 BEGIN
@@ -129,13 +128,16 @@
                     END LOOP;
                 END;
                 $$;
+
 --         4.3. Создание хранимых процедур для выполнения операций с записями:
 --             4.3.1. Создайте хранимую процедуру ввода данных в таблицу project, предусмотрите обработку исключений.
-                CREATE OR REPLACE PROCEDURE insert_project_safe(
-                    p_name VARCHAR, p_price NUMERIC, p_shifr VARCHAR, p_cmd_id INT
-                )
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE insert_project_safe (
+    p_name VARCHAR,
+    p_price NUMERIC,
+    p_shifr VARCHAR,
+    p_cmd_id INT
+) LANGUAGE plpgsql AS $$
                 BEGIN
                     INSERT INTO z5_project (projectname, price, shifr, idcommand, startdate)
                     VALUES (p_name, p_price, p_shifr, p_cmd_id, CURRENT_DATE);
@@ -143,10 +145,10 @@
                     RAISE NOTICE 'Ошибка вставки проекта: %', SQLERRM;
                 END;
                 $$;
+
 --             4.3.2. Создайте хранимую процедуру изменения записей таблицы team
-                CREATE OR REPLACE PROCEDURE update_team_name(p_id INT, p_new_name VARCHAR)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE update_team_name (p_id INT, p_new_name VARCHAR) LANGUAGE plpgsql AS $$
                 BEGIN
                     UPDATE z5_command SET command = p_new_name WHERE id = p_id;
                     IF NOT FOUND THEN
@@ -154,13 +156,17 @@
                     END IF;
                 END;
                 $$;
---             4.3.3. Добавьте поле рейтинг в таблицу student. Присвойте студентам рейтинг 50. Создайте хранимую процедуру для изменения рейтинга на 10% с каждым участием в проекте. 
-                ALTER TABLE z5_student ADD COLUMN rating NUMERIC DEFAULT 50;
-                UPDATE z5_student SET rating = 50;
 
-                CREATE OR REPLACE PROCEDURE update_student_rating_proc(p_student_id INT)
-                LANGUAGE plpgsql
-                AS $$
+--             4.3.3. Добавьте поле рейтинг в таблицу student. Присвойте студентам рейтинг 50. Создайте хранимую процедуру для изменения рейтинга на 10% с каждым участием в проекте. 
+ALTER TABLE z5_student
+ADD COLUMN rating NUMERIC DEFAULT 50;
+
+UPDATE z5_student
+SET
+    rating = 50;
+
+CREATE
+OR REPLACE PROCEDURE update_student_rating_proc (p_student_id INT) LANGUAGE plpgsql AS $$
                 DECLARE
                     prj_count INT;
                     current_rating NUMERIC;
@@ -181,12 +187,11 @@
                     RAISE NOTICE 'Новый рейтинг студента %: %', p_student_id, current_rating;
                 END;
                 $$;
+
 --         4.4. Создание хранимых функций:
 --             4.4.1. (int) Создадим хранимую функцию, которая по названию команды получит общее количество проектов, которые выполнялись за конкретный месяц.
-                CREATE OR REPLACE FUNCTION count_projects_by_team_month(p_team_name VARCHAR, p_month INT)
-                RETURNS INT
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION count_projects_by_team_month (p_team_name VARCHAR, p_month INT) RETURNS INT LANGUAGE plpgsql AS $$
                 DECLARE
                     cnt INT;
                 BEGIN
@@ -198,11 +203,10 @@
                     RETURN cnt;
                 END;
                 $$;
+
 --             4.4.2. (text) Создадим хранимую функцию, которая по имени команды выводит название проекта, имеющую максимальную стоимость для данной команды.
-                CREATE OR REPLACE FUNCTION get_max_price_project_name(p_team_name VARCHAR)
-                RETURNS TEXT
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION get_max_price_project_name (p_team_name VARCHAR) RETURNS TEXT LANGUAGE plpgsql AS $$
                 DECLARE
                     p_name TEXT;
                 BEGIN
@@ -216,19 +220,19 @@
                     RETURN COALESCE(p_name, 'Нет проектов');
                 END;
                 $$;
+
 --             4.4.3. (применение функции count_day) Найдите количество дней, которые прошли от даты начала работы над проектом до текущей даты. При выполнении задания используйте функцию count_day, созданную ранее.
-                -- Вспомогательная функция count_day (как сказано в задании, "созданная ранее")
-                CREATE OR REPLACE FUNCTION count_day(start_d DATE) RETURNS INT AS $$
+-- Вспомогательная функция count_day (как сказано в задании, "созданная ранее")
+CREATE
+OR REPLACE FUNCTION count_day (start_d DATE) RETURNS INT AS $$
                 BEGIN
                     RETURN (CURRENT_DATE - start_d);
                 END;
                 $$ LANGUAGE plpgsql;
 
-                -- Основное задание
-                CREATE OR REPLACE FUNCTION days_since_project_start(p_project_id INT)
-                RETURNS INT
-                LANGUAGE plpgsql
-                AS $$
+-- Основное задание
+CREATE
+OR REPLACE FUNCTION days_since_project_start (p_project_id INT) RETURNS INT LANGUAGE plpgsql AS $$
                 DECLARE
                     s_date DATE;
                 BEGIN
@@ -237,11 +241,10 @@
                     RETURN count_day(s_date);
                 END;
                 $$;
+
 --             4.4.4. (set) Создайте функцию, которая возвращает всех студентов указанной команды.
-                CREATE OR REPLACE FUNCTION get_students_in_team(p_team_name VARCHAR)
-                RETURNS SETOF z5_student
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION get_students_in_team (p_team_name VARCHAR) RETURNS SETOF z5_student LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY 
                     SELECT s.* 
@@ -250,15 +253,20 @@
                     WHERE c.command = p_team_name;
                 END;
                 $$;
---             4.4.5. *(массив) Добавьте поле телефоны в таблицу student, типа данных – массив строк, заполните значениями. Напишите функцию, которая находит контактные телефоны указанного студента.
-                ALTER TABLE z5_student ADD COLUMN phones TEXT[];
-                -- Заполним для теста
-                UPDATE z5_student SET phones = ARRAY['+79001112233', '+79998887766'] WHERE id = 1;
 
-                CREATE OR REPLACE FUNCTION get_student_phones(p_student_id INT)
-                RETURNS TEXT[]
-                LANGUAGE plpgsql
-                AS $$
+--             4.4.5. *(массив) Добавьте поле телефоны в таблицу student, типа данных – массив строк, заполните значениями. Напишите функцию, которая находит контактные телефоны указанного студента.
+ALTER TABLE z5_student
+ADD COLUMN phones TEXT[];
+
+-- Заполним для теста
+UPDATE z5_student
+SET
+    phones = ARRAY['+79001112233', '+79998887766']
+WHERE
+    id = 1;
+
+CREATE
+OR REPLACE FUNCTION get_student_phones (p_student_id INT) RETURNS TEXT[] LANGUAGE plpgsql AS $$
                 DECLARE
                     res TEXT[];
                 BEGIN
@@ -266,31 +274,29 @@
                     RETURN res;
                 END;
                 $$;
+
 --             4.4.6. *(сложный тип данных) Создайте тип данных t_us для хранения списка студентов. Создайте таблицу student_project с полями шифр проекта, название, поле sp типа данных t_us. Заполните данными из существующих таблиц. Напишите программу для получения списка студентов, которые выполняли проекты с номером 1234, и с номером 1235.
-                -- Создаем тип для студента
-                CREATE TYPE t_us AS (
-                    lastname VARCHAR,
-                    firstname VARCHAR
-                );
+-- Создаем тип для студента
+CREATE TYPE t_us AS (lastname VARCHAR, firstname VARCHAR);
 
-                -- Таблица student_project со сложным типом
-                CREATE TABLE z5_student_project_complex (
-                    shifr VARCHAR(20),
-                    projectname VARCHAR(100),
-                    sp t_us
-                );
+-- Таблица student_project со сложным типом
+CREATE TABLE
+    z5_student_project_complex (
+        shifr VARCHAR(20),
+        projectname VARCHAR(100),
+        sp t_us
+    );
 
-                -- Заполнение (в реальности это делается сложнее, здесь пример одной вставки)
-                INSERT INTO z5_student_project_complex (shifr, projectname, sp)
-                VALUES 
-                ('1234', 'Proj A', ROW('Ivanov', 'Ivan')::t_us),
-                ('1235', 'Proj B', ROW('Petrov', 'Petr')::t_us);
+-- Заполнение (в реальности это делается сложнее, здесь пример одной вставки)
+INSERT INTO
+    z5_student_project_complex (shifr, projectname, sp)
+VALUES
+    ('1234', 'Proj A', ROW ('Ivanov', 'Ivan')::t_us),
+    ('1235', 'Proj B', ROW ('Petrov', 'Petr')::t_us);
 
-                -- Функция получения списка (возвращает текст для наглядности)
-                CREATE OR REPLACE FUNCTION get_students_for_projects_1234_1235()
-                RETURNS TABLE(lname VARCHAR, fname VARCHAR, shifr_out VARCHAR)
-                LANGUAGE plpgsql
-                AS $$
+-- Функция получения списка (возвращает текст для наглядности)
+CREATE
+OR REPLACE FUNCTION get_students_for_projects_1234_1235 () RETURNS TABLE (lname VARCHAR, fname VARCHAR, shifr_out VARCHAR) LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY
                     SELECT (sp).lastname, (sp).firstname, shifr
@@ -298,17 +304,16 @@
                     WHERE shifr IN ('1234', '1235');
                 END;
                 $$;
---             4.4.7. (refcursor) Объявите тип запись, включающую поля Фамилия студента, Название проекта, Дата начала работы над проектом. Создайте хранимую функцию, которая по номеру выдачи проекта получит запись – фамилия студента, название проекта и дата начала работы над проектом. Выведите результат работы функции в окно вывода.
-                CREATE TYPE project_issue_rec AS (
-                    lastname VARCHAR,
-                    projectname VARCHAR,
-                    startdate DATE
-                );
 
-                CREATE OR REPLACE FUNCTION get_project_info_cursor(p_project_id INT)
-                RETURNS refcursor
-                LANGUAGE plpgsql
-                AS $$
+--             4.4.7. (refcursor) Объявите тип запись, включающую поля Фамилия студента, Название проекта, Дата начала работы над проектом. Создайте хранимую функцию, которая по номеру выдачи проекта получит запись – фамилия студента, название проекта и дата начала работы над проектом. Выведите результат работы функции в окно вывода.
+CREATE TYPE project_issue_rec AS (
+    lastname VARCHAR,
+    projectname VARCHAR,
+    startdate DATE
+);
+
+CREATE
+OR REPLACE FUNCTION get_project_info_cursor (p_project_id INT) RETURNS refcursor LANGUAGE plpgsql AS $$
                 DECLARE
                     ref refcursor;
                 BEGIN
@@ -321,12 +326,11 @@
                     RETURN ref;
                 END;
                 $$;
+
 --             4.4.8. (перегружаемая функция) Проверьте, есть ли проект указанной команды, если да, то найти их количество, если команда не указана, то вернуть 0. (перегрузка функции – разное количество параметров). 
-                -- 1. С параметром (название команды)
-                CREATE OR REPLACE FUNCTION check_project_overload(p_team_name VARCHAR)
-                RETURNS INT
-                LANGUAGE plpgsql
-                AS $$
+-- 1. С параметром (название команды)
+CREATE
+OR REPLACE FUNCTION check_project_overload (p_team_name VARCHAR) RETURNS INT LANGUAGE plpgsql AS $$
                 DECLARE
                     cnt INT;
                 BEGIN
@@ -338,31 +342,27 @@
                 END;
                 $$;
 
-                -- 2. Без параметров (возвращает 0)
-                CREATE OR REPLACE FUNCTION check_project_overload()
-                RETURNS INT
-                LANGUAGE plpgsql
-                AS $$
+-- 2. Без параметров (возвращает 0)
+CREATE
+OR REPLACE FUNCTION check_project_overload () RETURNS INT LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN 0;
                 END;
                 $$;
+
 --             4.4.9. (табличная функция) Создайте функцию, выводящую названия проектов как шифр и их название. Выведите данные на экран в виде шифр– название. При выводе пользуйтесь функциями LPAD, RPAD. 
-                CREATE OR REPLACE FUNCTION list_projects_formatted()
-                RETURNS TABLE(formatted_str TEXT)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION list_projects_formatted () RETURNS TABLE (formatted_str TEXT) LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY 
                     SELECT RPAD(shifr, 10, '.') || LPAD(projectname, 20, ' ') 
                     FROM z5_project;
                 END;
                 $$;
+
 --             4.4.10. (возврат строки) Создайте функцию, возвращающую строку таблицы student, напишите запрос для добавления полученной с помощью функции строки в таблицу student.
-                CREATE OR REPLACE FUNCTION get_student_row(p_id INT)
-                RETURNS z5_student
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION get_student_row (p_id INT) RETURNS z5_student LANGUAGE plpgsql AS $$
                 DECLARE
                     r z5_student;
                 BEGIN
@@ -374,25 +374,16 @@
                 END;
                 $$;
 
-                -- Пример использования в SQL запросе:
-                -- INSERT INTO z5_student SELECT * FROM get_student_row(1);
-
+-- Пример использования в SQL запросе:
+-- INSERT INTO z5_student SELECT * FROM get_student_row(1);
 --             4.4.11. (курсоры) Создайте тип данных t_bk для хранения списка проектов. Создайте таблицу accounting с полями номер месяца, год, поле sp_us типа данных t_us, поле sp_bk типа данных t_bk. Заполните таблицу записями, используя курсоры. Выведите данные.
-                CREATE TYPE t_bk AS (
-                    projectname VARCHAR,
-                    price NUMERIC
-                );
+CREATE TYPE t_bk AS (projectname VARCHAR, price NUMERIC);
 
-                CREATE TABLE z5_accounting (
-                    month INT,
-                    year INT,
-                    sp_us t_us,
-                    sp_bk t_bk
-                );
+CREATE TABLE
+    z5_accounting (month INT, year INT, sp_us t_us, sp_bk t_bk);
 
-                CREATE OR REPLACE PROCEDURE fill_accounting_cursor()
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE fill_accounting_cursor () LANGUAGE plpgsql AS $$
                 DECLARE
                     cur_data CURSOR FOR 
                         SELECT s.lastname, s.firstname, p.projectname, p.price, p.startdate
@@ -416,11 +407,10 @@
                     CLOSE cur_data;
                 END;
                 $$;
+
 --             4.4.12. *(полиморфная функция RETURNS anyelement) Создайте функцию (id int, nm text), которая будет возвращать разную информацию в зависимости от типа от типа переданной сущности и типа операции для таблиц Ментор, Студент, Проект – для ментора и студента – количество проектов, для таблицы Проект – список ресурсов.
-                CREATE OR REPLACE FUNCTION get_info_polymorph(p_id INT, p_table_name TEXT)
-                RETURNS TEXT
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION get_info_polymorph (p_id INT, p_table_name TEXT) RETURNS TEXT LANGUAGE plpgsql AS $$
                 DECLARE
                     result TEXT;
                 BEGIN
@@ -442,11 +432,10 @@
                     RETURN result;
                 END;
                 $$;
+
 --             4.4.13. *(QUERY LATERAL join с функциями) Создайте функцию с использованием LATERAL, которая для команд показывает проекты за указанный период.
-                CREATE OR REPLACE FUNCTION get_projects_for_period(start_d DATE, end_d DATE)
-                RETURNS TABLE(cmd_id INT, prj_name VARCHAR, prj_date DATE)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION get_projects_for_period (start_d DATE, end_d DATE) RETURNS TABLE (cmd_id INT, prj_name VARCHAR, prj_date DATE) LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY
                     SELECT idcommand, projectname, startdate 
@@ -455,23 +444,22 @@
                 END;
                 $$;
 
-                -- Использование:
-                -- SELECT c.command, p.prj_name 
-                -- FROM z5_command c, 
-                -- LATERAL get_projects_for_period('2023-01-01', '2023-12-31') p 
-                -- WHERE c.id = p.cmd_id;
-
+-- Использование:
+-- SELECT c.command, p.prj_name 
+-- FROM z5_command c, 
+-- LATERAL get_projects_for_period('2023-01-01', '2023-12-31') p 
+-- WHERE c.id = p.cmd_id;
 --         4.5. Доп.задания*
 --             4.5.1. Добавить в таблицу ментор поле рейтинг. Задайте значение рейтинга 100 для каждого метора. Изменить значение рейтинга для ментора, применяя правила:
 --                 • если ментор не брал команды в текущий месяц -50 к рейтингу
 --                 • если ментор не брал команды в текущую неделю -10 к рейтингу
 --                 • если ментор в текущий месяц взял 1 команду +10 к рейтингу
 --                 • если ментор взял больше 5 команд+100 к рейтингу
-                ALTER TABLE z5_mentor ADD COLUMN rating INT DEFAULT 100;
+ALTER TABLE z5_mentor
+ADD COLUMN rating INT DEFAULT 100;
 
-                CREATE OR REPLACE PROCEDURE update_mentor_rating()
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE PROCEDURE update_mentor_rating () LANGUAGE plpgsql AS $$
                 DECLARE
                     m RECORD;
                     cmd_count_month INT;
@@ -500,11 +488,14 @@
                     END LOOP;
                 END;
                 $$;
+
 --             4.5.2. Создайте хранимую функцию, возвращающую таблицу данных о студентах и проектах, которые они взяли в указанный период.
-                CREATE OR REPLACE FUNCTION report_students_projects(d_start DATE, d_end DATE)
-                RETURNS TABLE(student_name VARCHAR, project_name VARCHAR, start_date DATE)
-                LANGUAGE plpgsql
-                AS $$
+CREATE
+OR REPLACE FUNCTION report_students_projects (d_start DATE, d_end DATE) RETURNS TABLE (
+    student_name VARCHAR,
+    project_name VARCHAR,
+    start_date DATE
+) LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY
                     SELECT s.lastname, p.projectname, p.startdate
@@ -513,11 +504,11 @@
                     WHERE p.startdate BETWEEN d_start AND d_end;
                 END;
                 $$;
---             4.5.3. Выведите информацию о студентах группы с определённым номером, упорядоченных в порядке убывания года рождения
-                -- SELECT * FROM z5_student WHERE groupname = 'IU5' ORDER BY yearb DESC;
 
-                Отладка:
-                DO $$
+--             4.5.3. Выведите информацию о студентах группы с определённым номером, упорядоченных в порядке убывания года рождения
+-- SELECT * FROM z5_student WHERE groupname = 'IU5' ORDER BY yearb DESC;
+-- Отладка:
+DO $$
                 DECLARE
                     v_total NUMERIC;
                     v_out_name VARCHAR;
@@ -548,4 +539,3 @@
                     RAISE NOTICE '--- END DEBUGGING ---';
                 END;
                 $$;
-                            
