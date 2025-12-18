@@ -371,7 +371,6 @@ WHERE
 --                 • Создайте триггер, который при изменении номера группы в таблице Groups происходит автоматическое изменение всех кодовых значений user_new.
 -- Указания для выполнения: произведите проверку условия неравенства нового и старого значения ключевого поля, в случае неравенства выполните запрос на обновление подчинённой таблицы, установив в поле внешнего ключа связи новое значение первичного ключа главной таблицы, при условии равенства внешнего ключа старому значению поля внешнего ключа.
 -- Создадим отдельный триггер, так как стандартный FK делает это автоматически, но задание просит ручную реализацию.
--- Предполагаем связь: student_new.group_id -> groups.id
 CREATE
 OR REPLACE FUNCTION cascade_update_group () RETURNS TRIGGER AS $$
                     BEGIN
@@ -497,7 +496,7 @@ OR REPLACE FUNCTION check_task_rules () RETURNS TRIGGER AS $$
                         END IF;
                         
                         -- Проверка проекта (аналогично foreign key)
-                        IF NOT EXISTS (SELECT 1 FROM public.project WHERE id = NEW.project_id) THEN
+                        IF NOT EXISTS (SELECT 1 FROM z5_project WHERE id = NEW.idproject) THEN
                             RAISE EXCEPTION 'Project not found';
                         END IF;
 
@@ -505,7 +504,7 @@ OR REPLACE FUNCTION check_task_rules () RETURNS TRIGGER AS $$
                     END;
                     $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_check_task BEFORE INSERT ON public.task FOR EACH ROW
+CREATE TRIGGER trg_check_task BEFORE INSERT ON z5_task FOR EACH ROW
 EXECUTE FUNCTION check_task_rules ();
 
 --         4.3. Создание контролирующего триггера
@@ -646,8 +645,8 @@ OR REPLACE FUNCTION log_team_ops () RETURNS TRIGGER AS $$
                     IF (TG_OP = 'DELETE') THEN row_id := OLD.id; ELSE row_id := NEW.id; END IF;
                     
                     -- Пишем в таблицу log_student (как просили создать в 4.4.2, хотя логично было бы log_team)
-                    INSERT INTO log_student (date_, time_, event, row_number, user_)
-                    VALUES (curr_date, curr_time, TG_OP, row_id, curr_user);
+                    INSERT INTO log_student (username, log_date, operation, student_info)
+                    VALUES (curr_user, now(), TG_OP, '');
                     
                     IF (TG_OP = 'DELETE') THEN RETURN OLD; ELSE RETURN NEW; END IF;
                 END;
@@ -659,6 +658,11 @@ OR
 UPDATE
 OR DELETE ON z5_command FOR EACH ROW
 EXECUTE FUNCTION log_team_ops ();
+
+INSERT INTO
+    z5_command (id, command, rating)
+VALUES
+    (12, 'Team Epsilone', 4);
 
 --             4.4.4. Проверьте триггер, для этого выполните операцию добавления от имени другого пользователя.
 -- SET ROLE postgres; -- переключение пользователя, если есть права
@@ -677,7 +681,7 @@ FROM
 CREATE
 OR REPLACE FUNCTION abort_drop_table_after_18 () RETURNS event_trigger AS $$
                 BEGIN
-                    IF (EXTRACT(HOUR FROM current_time) >= 18) THEN
+                    IF (EXTRACT(HOUR FROM current_time) >= 12) THEN
                         RAISE EXCEPTION 'Удаление таблиц запрещено после 18:00';
                     END IF;
                 END;
@@ -685,6 +689,11 @@ OR REPLACE FUNCTION abort_drop_table_after_18 () RETURNS event_trigger AS $$
 
 CREATE EVENT TRIGGER trg_no_drop_evening ON sql_drop
 EXECUTE FUNCTION abort_drop_table_after_18 ();
+
+CREATE TABLE
+    some_table (id INTEGER, name VARCHAR);
+
+DROP TABLE some_table;
 
 --             4.5.2. Создайте триггер, который будет фиксировать случаи выполнения DML кода в субботу и в воскресенье. В лог нужно записывать имя пользователя, дату и время, текст запроса.
 -- Таблица лога DML
@@ -698,8 +707,8 @@ CREATE TABLE
 CREATE
 OR REPLACE FUNCTION check_weekend_dml () RETURNS TRIGGER AS $$
                 BEGIN
-                    -- 6 = Суббота, 0 = Воскресенье
-                    IF (EXTRACT(DOW FROM NOW()) IN (0, 6)) THEN
+                    -- 5 = Суббота, 6 = Воскресенье
+                    IF (EXTRACT(DOW FROM NOW()) IN (5, 6)) THEN
                         INSERT INTO log_dml_weekend (username, event_time, query_text)
                         VALUES (current_user, now(), current_query());
                     END IF;
@@ -707,13 +716,31 @@ OR REPLACE FUNCTION check_weekend_dml () RETURNS TRIGGER AS $$
                 END;
                 $$ LANGUAGE plpgsql;
 
--- Назначаем на таблицу (например, z5_student)
 CREATE TRIGGER trg_weekend_audit
 AFTER INSERT
 OR
 UPDATE
 OR DELETE ON z5_student FOR EACH ROW
 EXECUTE FUNCTION check_weekend_dml ();
+
+INSERT INTO
+    z5_student (
+        lastname,
+        firstname,
+        email,
+        groupname,
+        категория,
+        rating
+    )
+VALUES
+    (
+        'Выходной',
+        'Тест',
+        'test@mail.com',
+        '3093',
+        'студент',
+        20
+    );
 
 --         4.6. Создание INSTEAD OF триггера для вставки данных в представление
 --             4.6.1. Создайте многотабличное представление, которое выводит данные о проектах, командах и менторах, а также полей обязательных для заполнения в данных таблицах.
@@ -742,17 +769,13 @@ OR REPLACE FUNCTION insert_project_view () RETURNS TRIGGER AS $$
                     team_id INTEGER;
                     ment_id INTEGER;
                 BEGIN
-                    -- 1. Ищем или создаем команду
                     SELECT id INTO team_id FROM z5_command WHERE command = NEW.team_name;
                     IF team_id IS NULL THEN
                         INSERT INTO z5_command (command) VALUES (NEW.team_name) RETURNING id INTO team_id;
                     END IF;
 
-                    -- 2. Ищем ментора (по фамилии для примера)
                     SELECT id INTO ment_id FROM z5_mentor WHERE lastname = NEW.mentor_lastname LIMIT 1;
-                    -- Если ментора нет, можно либо создавать, либо оставлять NULL. Допустим, оставляем NULL, если не найден.
 
-                    -- 3. Вставляем проект
                     INSERT INTO z5_project (projectname, price, idcommand, mentor_id)
                     VALUES (NEW.projectname, NEW.price, team_id, ment_id);
 
@@ -767,4 +790,4 @@ EXECUTE FUNCTION insert_project_view ();
 INSERT INTO
     project_details_view (projectname, price, team_name, mentor_lastname)
 VALUES
-    ('Супер Проект 2', 150000, 'Omega', 'Ivanov');
+    ('Супер Проект 5', 150000, 'Omega', 'Ivanov');

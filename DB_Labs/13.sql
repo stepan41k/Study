@@ -98,27 +98,20 @@ DO $$
                         new_command_id INT;
                         mentor_count INT;
                     BEGIN
-                        -- 1. Ввод данных о команде
                         INSERT INTO z5_command (command) VALUES ('CyberTeam') RETURNING id INTO new_command_id;
                         
-                        -- 2. Ввод данных о менторе
                         INSERT INTO z5_mentor (lastname, firstname, email, idcommand) 
                         VALUES ('Ivanov', 'Ivan', 'ivan@test.com', new_command_id);
 
-                        -- 3. Проверка: есть ли у команды менторы (кроме того, которого мы только что добавили)
-                        -- Если мы хотим проверить, что до нашей вставки менторов НЕ было, то сейчас count должен быть равен 1.
                         SELECT COUNT(*) INTO mentor_count FROM z5_mentor WHERE idcommand = new_command_id;
                         
                         IF mentor_count > 1 THEN
                             RAISE NOTICE 'У команды уже были менторы. Отмена.';
-                            ROLLBACK; -- В блоке DO rollback не сработает напрямую, вызовем ошибку для отката
-                            -- RAISE EXCEPTION 'Transaction Cancelled'; 
+                            ROLLBACK;
                         ELSE
                             RAISE NOTICE 'Транзакция успешно зафиксирована.';
-                            -- В блоке DO коммит происходит автоматически в конце, если нет ошибок
                         END IF;
                     EXCEPTION WHEN OTHERS THEN
-                        -- Ловим ошибку и ничего не делаем, транзакция откатится
                         RAISE NOTICE 'Произошел откат: %', SQLERRM;
                     END $$;
 
@@ -149,20 +142,17 @@ OR REPLACE PROCEDURE check_date (
                         v_diff INT;
                         v_new_id INT;
                     BEGIN
-                        -- Ввод записи (старт новой под-транзакции не нужен, мы уже в процедуре)
                         INSERT INTO z5_project (projectname, idcommand, startdate, enddate) 
                         VALUES (p_projectname, p_idcommand, p_date_in, p_date_out)
                         RETURNING id INTO v_new_id;
 
-                        -- Вычисление разницы
                         v_diff := p_date_out - p_date_in;
 
-                        -- Проверка
                         IF v_diff > 0 THEN
-                            COMMIT; -- Фиксация
+                            COMMIT; 
                             RAISE NOTICE 'Result: %', v_result;
                         ELSE
-                            ROLLBACK; -- Откат вставки
+                            ROLLBACK;
                             v_result := 'No';
                             RAISE NOTICE 'Result: % (Dates invalid, transaction rolled back)', v_result;
                         END IF;
@@ -218,8 +208,6 @@ OR REPLACE FUNCTION log_price_change () RETURNS TRIGGER AS $$
                     query_str TEXT;
                 BEGIN
                     IF NEW.price > 10000 THEN
-                        -- Формируем строку подключения (нужно настроить доступ к своей БД)
-                        -- Для примера используется локальное подключение.
                         conn_str := 'dbname=' || current_database() || ' user=' || current_user;
                         
                         query_str := format(
@@ -227,12 +215,10 @@ OR REPLACE FUNCTION log_price_change () RETURNS TRIGGER AS $$
                             NEW.id, COALESCE(OLD.price, 0), NEW.price
                         );
                         
-                        -- Выполняем вставку через dblink, чтобы она закоммитилась независимо от основной транзакции
                         PERFORM dblink_exec(conn_str, query_str);
                     END IF;
                     RETURN NEW;
                 EXCEPTION WHEN OTHERS THEN
-                    -- Если dblink не настроен, работаем как обычный триггер (но данные пропадут при rollback)
                     INSERT INTO log_price (project_id, old_price, new_price, note)
                     VALUES (NEW.id, OLD.price, NEW.price, 'Price > 10000 (Local)');
                     RETURN NEW;
@@ -263,21 +249,17 @@ DO $$
                         FETCH cur_projects INTO rec;
                         EXIT WHEN NOT FOUND;
                         
-                        -- Увеличиваем на 20%
                         v_new_price := rec.price * 1.20;
                         
-                        -- Точка сохранения перед изменением
                         SAVEPOINT sp_before_update;
                         
                         UPDATE z5_project SET price = v_new_price WHERE id = rec.id;
                         
-                        -- Проверка условия
                         IF v_new_price > 10000 THEN
                             RAISE NOTICE 'Project % price would be %, rolling back update.', rec.id, v_new_price;
                             ROLLBACK TO SAVEPOINT sp_before_update;
                         ELSE
                             RAISE NOTICE 'Project % updated to %', rec.id, v_new_price;
-                            -- Изменение остается в текущей транзакции (зафиксируется в конце блока)
                         END IF; 
                     END LOOP;
                     CLOSE cur_projects;
@@ -301,7 +283,7 @@ OR REPLACE PROCEDURE add_user_with_phone (
                 BEGIN
                     IF (p_home IS NULL OR p_home = '') AND (p_cell IS NULL OR p_cell = '') THEN
                         RAISE NOTICE 'Ошибка: Не указан ни один телефон для связи.';
-                        RETURN; -- Выход без вставки
+                        RETURN;
                     END IF;
 
                     INSERT INTO user_new (username, home_phone, cell_phone) 
@@ -326,14 +308,13 @@ CREATE TABLE
     users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(100),
-        email_enc BYTEA -- Храним зашифрованный email
+        email_enc BYTEA
     );
 
 -- Функция шифрования (используем ключ 'my_secret_key')
 CREATE
 OR REPLACE FUNCTION encrypt_email () RETURNS TRIGGER AS $$
                     BEGIN
-                        -- Шифруем данные перед вставкой
                         NEW.email_enc := pgp_sym_encrypt(NEW.email_enc::text, 'my_secret_key');
                         RETURN NEW;
                     END;
@@ -431,7 +412,7 @@ DO $$
                         VALUES (
                             'Student ' || i,
                             'student' || i,
-                            hash_sha256('pass' || i, 1) -- Хешируем пароль
+                            hash_sha256('pass' || i, 1)
                         );
                     END LOOP;
                 END $$;
@@ -525,8 +506,8 @@ DROP TABLE IF EXISTS app_users;
 CREATE TABLE
     app_users (
         id SERIAL PRIMARY KEY,
-        username_enc BYTEA, -- Шифрованное имя
-        password_hash TEXT, -- Хеш пароля
+        username_enc BYTEA,
+        password_hash TEXT,
         salt TEXT, -- Соль
         role VARCHAR(20) CHECK (role IN ('admin', 'moderator', 'user')),
         created_at TIMESTAMP DEFAULT NOW()
@@ -545,13 +526,10 @@ OR REPLACE PROCEDURE register_user (p_username TEXT, p_password TEXT, p_role TEX
                         v_hash TEXT;
                         v_user_enc BYTEA;
                     BEGIN
-                        -- Генерация соли (случайная строка)
                         v_salt := encode(gen_random_bytes(16), 'hex');
                         
-                        -- Хеширование пароля с солью
                         v_hash := encode(digest(p_password || v_salt, 'sha256'), 'hex');
                         
-                        -- Шифрование имени пользователя
                         v_user_enc := pgp_sym_encrypt(p_username, 'app_secret_key');
                         
                         INSERT INTO app_users (username_enc, password_hash, salt, role)
@@ -568,10 +546,8 @@ OR REPLACE FUNCTION authenticate_user (p_username TEXT, p_password TEXT) RETURNS
                         rec RECORD;
                         v_hash_check TEXT;
                     BEGIN
-                        -- Ищем пользователя (дешифруем имена на лету - медленно, но безопасно для задания)
                         FOR rec IN SELECT * FROM app_users LOOP
                             IF pgp_sym_decrypt(rec.username_enc, 'app_secret_key') = p_username THEN
-                                -- Пользователь найден, проверяем пароль
                                 v_hash_check := encode(digest(p_password || rec.salt, 'sha256'), 'hex');
                                 
                                 IF v_hash_check = rec.password_hash THEN
@@ -590,7 +566,6 @@ OR REPLACE FUNCTION authenticate_user (p_username TEXT, p_password TEXT) RETURNS
 CREATE
 OR REPLACE FUNCTION generate_sentence (word_count INT) RETURNS TEXT AS $$
                     BEGIN
-                        -- Просто вызываем функцию из 1.4 и добавляем точку.
                         RETURN initcap(get_random_words(word_count)) || '.';
                     END;
                     $$ LANGUAGE plpgsql;

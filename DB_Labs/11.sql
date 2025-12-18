@@ -307,27 +307,55 @@ OR REPLACE FUNCTION get_students_for_projects_1234_1235 () RETURNS TABLE (lname 
 
 -- TODO: Curosr
 --             4.4.7. (refcursor) Объявите тип запись, включающую поля Фамилия студента, Название проекта, Дата начала работы над проектом. Создайте хранимую функцию, которая по номеру выдачи проекта получит запись – фамилия студента, название проекта и дата начала работы над проектом. Выведите результат работы функции в окно вывода.
-CREATE TYPE project_issue_rec AS (
-    lastname VARCHAR,
-    projectname VARCHAR,
-    startdate DATE
+CREATE TYPE student_project_info AS (
+    s_lastname VARCHAR,
+    p_projectname VARCHAR,
+    p_startdate DATE
 );
 
 CREATE
-OR REPLACE FUNCTION get_project_info_cursor (p_project_id INT) RETURNS refcursor LANGUAGE plpgsql AS $$
-                DECLARE
-                    ref refcursor;
-                BEGIN
-                    OPEN ref FOR 
-                        SELECT s.lastname, p.projectname, p.startdate
-                        FROM z5_project p
-                        LEFT JOIN z5_command c ON p.idcommand = c.id
-                        LEFT JOIN z5_student s ON s.idcommand = c.id -- связь условная, берем всех студентов команды проекта
-                        WHERE p.id = p_project_id;
-                    RETURN ref;
-                END;
-                $$;
+OR REPLACE FUNCTION get_project_cursor (p_project_id INTEGER) RETURNS refcursor LANGUAGE plpgsql AS $$
+            DECLARE
+                my_ref_cursor refcursor := 'result_cursor';
+            BEGIN
+                OPEN my_ref_cursor FOR
+                SELECT 
+                    s.lastname, 
+                    p.projectname, 
+                    p.startdate
+                FROM z5_project p
+                JOIN z5_student s ON p.idcommand = s.idcommand
+                WHERE p.id = p_project_id;
 
+                RETURN my_ref_cursor;
+            END;
+            $$;
+
+DO $$
+            DECLARE
+                v_cursor refcursor;
+                v_record student_project_info;
+            BEGIN
+                v_cursor := get_project_cursor(1);
+
+                LOOP
+                    FETCH v_cursor INTO v_record;
+                    EXIT WHEN NOT FOUND;
+
+                    RAISE NOTICE 'Фамилия: %, Проект: %, Дата начала: %', 
+                                v_record.s_lastname, 
+                                v_record.p_projectname, 
+                                v_record.p_startdate;
+                END LOOP;
+                
+                CLOSE v_cursor;
+            END;
+            $$;
+
+SELECT
+    get_project_info_cursor (2);
+
+--TODO: overload
 --             4.4.8. (перегружаемая функция) Проверьте, есть ли проект указанной команды, если да, то найти их количество, если команда не указана, то вернуть 0. (перегрузка функции – разное количество параметров). 
 -- 1. С параметром (название команды)
 CREATE
@@ -350,6 +378,12 @@ OR REPLACE FUNCTION check_project_overload () RETURNS INT LANGUAGE plpgsql AS $$
                     RETURN 0;
                 END;
                 $$;
+
+SELECT
+    check_project_overload ();
+
+SELECT
+    check_project_overload ('Omega');
 
 --             4.4.9. (табличная функция) Создайте функцию, выводящую названия проектов как шифр и их название. Выведите данные на экран в виде шифр– название. При выводе пользуйтесь функциями LPAD, RPAD. 
 CREATE
@@ -410,6 +444,13 @@ OR REPLACE PROCEDURE fill_accounting_cursor () LANGUAGE plpgsql AS $$
                 END;
                 $$;
 
+CALL fill_accounting_cursor ();
+
+SELECT
+    *
+from
+    z5_accounting;
+
 -- TODO: polymorph
 --             4.4.12. *(полиморфная функция RETURNS anyelement) Создайте функцию (id int, nm text), которая будет возвращать разную информацию в зависимости от типа от типа переданной сущности и типа операции для таблиц Ментор, Студент, Проект – для ментора и студента – количество проектов, для таблицы Проект – список ресурсов.
 CREATE
@@ -418,7 +459,6 @@ OR REPLACE FUNCTION z5_get_entity_info (search_id INT, entity_sample anyelement)
                 v_result TEXT;
                 v_type TEXT := pg_typeof(entity_sample)::TEXT;
             BEGIN
-                -- 1. Логика для СТУДЕНТА (Считаем проекты команды, в которой состоит студент)
                 IF v_type LIKE '%z5_student' THEN
                     SELECT COUNT(p.id)::TEXT INTO v_result
                     FROM z5_student s
@@ -427,7 +467,6 @@ OR REPLACE FUNCTION z5_get_entity_info (search_id INT, entity_sample anyelement)
                     
                     RETURN 'Количество проектов студента: ' || COALESCE(v_result, '0');
 
-                -- 2. Логика для МЕНТОРА (Считаем проекты, где он указан как mentor_id)
                 ELSIF v_type LIKE '%z5_mentor' THEN
                     SELECT COUNT(id)::TEXT INTO v_result
                     FROM z5_project
@@ -435,7 +474,6 @@ OR REPLACE FUNCTION z5_get_entity_info (search_id INT, entity_sample anyelement)
                     
                     RETURN 'Количество проектов ментора: ' || COALESCE(v_result, '0');
 
-                -- 3. Логика для ПРОЕКТА (Список ресурсов из таблицы z5_resource)
                 ELSIF v_type LIKE '%z5_project' THEN
                     SELECT string_agg(resource, ', ') INTO v_result
                     FROM z5_resource
@@ -458,6 +496,7 @@ SELECT
 SELECT
     z5_get_entity_info (1, NULL::z5_project);
 
+-- TODO: lateral
 --             4.4.13. *(QUERY LATERAL join с функциями) Создайте функцию с использованием LATERAL, которая для команд показывает проекты за указанный период.
 CREATE
 OR REPLACE FUNCTION get_projects_by_cmd_period (_cmd_id INT, _start_date DATE, _end_date DATE) RETURNS TABLE (
@@ -547,21 +586,27 @@ OR REPLACE PROCEDURE update_mentor_rating () LANGUAGE plpgsql AS $$
 --             4.5.2. Создайте хранимую функцию, возвращающую таблицу данных о студентах и проектах, которые они взяли в указанный период.
 CREATE
 OR REPLACE FUNCTION report_students_projects (d_start DATE, d_end DATE) RETURNS TABLE (
+    fist_name VARCHAR,
     student_name VARCHAR,
     project_name VARCHAR,
     start_date DATE
 ) LANGUAGE plpgsql AS $$
                 BEGIN
                     RETURN QUERY
-                    SELECT s.lastname, p.projectname, p.startdate
+                    SELECT s.firstname, s.lastname, p.projectname, p.startdate
                     FROM z5_student s
                     JOIN z5_project p ON s.idcommand = p.idcommand
                     WHERE p.startdate BETWEEN d_start AND d_end;
                 END;
                 $$;
 
+SELECT
+    *
+FROM
+    report_students_projects ('2023-01-01', '2025-12-31');
+
 --             4.5.3. Выведите информацию о студентах группы с определённым номером, упорядоченных в порядке убывания года рождения
--- SELECT * FROM z5_student WHERE groupname = 'IU5' ORDER BY yearb DESC;
+-- SELECT * FROM z5_student WHERE groupname = 'Omega' ORDER BY yearb DESC;
 -- Отладка:
 DO $$
                 DECLARE
