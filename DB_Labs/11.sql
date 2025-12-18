@@ -305,6 +305,7 @@ OR REPLACE FUNCTION get_students_for_projects_1234_1235 () RETURNS TABLE (lname 
                 END;
                 $$;
 
+-- TODO: Curosr
 --             4.4.7. (refcursor) Объявите тип запись, включающую поля Фамилия студента, Название проекта, Дата начала работы над проектом. Создайте хранимую функцию, которая по номеру выдачи проекта получит запись – фамилия студента, название проекта и дата начала работы над проектом. Выведите результат работы функции в окно вывода.
 CREATE TYPE project_issue_rec AS (
     lastname VARCHAR,
@@ -374,6 +375,7 @@ OR REPLACE FUNCTION get_student_row (p_id INT) RETURNS z5_student LANGUAGE plpgs
                 END;
                 $$;
 
+-- TODO: Курсор
 -- Пример использования в SQL запросе:
 -- INSERT INTO z5_student SELECT * FROM get_student_row(1);
 --             4.4.11. (курсоры) Создайте тип данных t_bk для хранения списка проектов. Создайте таблицу accounting с полями номер месяца, год, поле sp_us типа данных t_us, поле sp_bk типа данных t_bk. Заполните таблицу записями, используя курсоры. Выведите данные.
@@ -408,6 +410,7 @@ OR REPLACE PROCEDURE fill_accounting_cursor () LANGUAGE plpgsql AS $$
                 END;
                 $$;
 
+-- TODO: polymorph
 --             4.4.12. *(полиморфная функция RETURNS anyelement) Создайте функцию (id int, nm text), которая будет возвращать разную информацию в зависимости от типа от типа переданной сущности и типа операции для таблиц Ментор, Студент, Проект – для ментора и студента – количество проектов, для таблицы Проект – список ресурсов.
 CREATE
 OR REPLACE FUNCTION z5_get_entity_info (search_id INT, entity_sample anyelement) RETURNS TEXT AS $$
@@ -457,20 +460,52 @@ SELECT
 
 --             4.4.13. *(QUERY LATERAL join с функциями) Создайте функцию с использованием LATERAL, которая для команд показывает проекты за указанный период.
 CREATE
-OR REPLACE FUNCTION get_projects_for_period (start_d DATE, end_d DATE) RETURNS TABLE (cmd_id INT, prj_name VARCHAR, prj_date DATE) LANGUAGE plpgsql AS $$
+OR REPLACE FUNCTION get_projects_by_cmd_period (_cmd_id INT, _start_date DATE, _end_date DATE) RETURNS TABLE (
+    p_name VARCHAR,
+    p_start DATE,
+    p_status VARCHAR,
+    p_price INT
+) LANGUAGE plpgsql AS $$
                 BEGIN
-                    RETURN QUERY
-                    SELECT idcommand, projectname, startdate 
-                    FROM z5_project 
-                    WHERE startdate BETWEEN start_d AND end_d;
+                    RETURN QUERY 
+                    SELECT 
+                        p.projectname::VARCHAR,
+                        p.startdate,
+                        p.status::VARCHAR,
+                        p.price::INT
+                    FROM z5_project p
+                    WHERE p.idcommand = _cmd_id
+                    AND p.startdate >= _start_date 
+                    AND p.startdate <= _end_date;
                 END;
                 $$;
 
--- Использование:
--- SELECT c.command, p.prj_name 
--- FROM z5_command c, 
--- LATERAL get_projects_for_period('2023-01-01', '2023-12-31') p 
--- WHERE c.id = p.cmd_id;
+CREATE
+OR REPLACE FUNCTION show_commands_projects_report (_date_from DATE, _date_to DATE) RETURNS TABLE (
+    command_name VARCHAR,
+    project_name VARCHAR,
+    start_date DATE,
+    status VARCHAR,
+    price INT
+) LANGUAGE plpgsql AS $$
+                BEGIN
+                    RETURN QUERY 
+                    SELECT 
+                        c.command::VARCHAR,
+                        res.p_name,
+                        res.p_start,
+                        res.p_status,
+                        res.p_price
+                    FROM z5_command c
+                    CROSS JOIN LATERAL get_projects_by_cmd_period(c.id, _date_from, _date_to) res;
+                END;
+                $$;
+
+SELECT
+    *
+FROM
+    show_commands_projects_report ('2022-01-01', '2025-12-31');
+
 --         4.5. Доп.задания*
 --             4.5.1. Добавить в таблицу ментор поле рейтинг. Задайте значение рейтинга 100 для каждого метора. Изменить значение рейтинга для ментора, применяя правила:
 --                 • если ментор не брал команды в текущий месяц -50 к рейтингу
@@ -491,12 +526,10 @@ OR REPLACE PROCEDURE update_mentor_rating () LANGUAGE plpgsql AS $$
                     FOR m IN SELECT id, rating FROM z5_mentor LOOP
                         rating_change := 0;
                         
-                        -- Кол-во проектов (команд) в этом месяце (смотрим по дате старта проекта, привязанного к ментору)
                         SELECT COUNT(*) INTO cmd_count_month 
                         FROM z5_project 
                         WHERE mentor_id = m.id AND EXTRACT(MONTH FROM startdate) = EXTRACT(MONTH FROM CURRENT_DATE);
 
-                        -- Проверка недели (упрощенно: проекты стартовавшие за посл 7 дней)
                         SELECT COUNT(*) INTO cmd_count_week 
                         FROM z5_project 
                         WHERE mentor_id = m.id AND startdate >= CURRENT_DATE - 7;

@@ -175,7 +175,19 @@ SELECT
 FROM
     user_new
 WHERE
-    contact_number @> ARRAY['9112526'];
+    contact_number @> ARRAY['+79009990022'];
+
+SELECT
+    *
+FROM
+    user_new
+WHERE
+    contact_number <@ ARRAY[
+        '+79009990022',
+        '+79003334466',
+        '+79003334455',
+        '+79001112233'
+    ];
 
 -- Пересечение массивов (есть ли общие элементы)
 SELECT
@@ -282,7 +294,7 @@ FROM
 
 -- Вывод расписания для группы 6901 (XPath)
 SELECT
-    xpath('//lesson[@group="6901"]/text()', schedule)
+    xpath('//lesson[@group="6901"]', schedule)
 FROM
     mentor_new;
 
@@ -341,7 +353,7 @@ VALUES
     (2, 'Design', 2021);
 
 ALTER TABLE user_new
-ADD COLUMN group_id_fk INTEGER REFERENCES groups (group_id);
+ADD COLUMN INTEGER REFERENCES groups (group_id);
 
 UPDATE user_new
 SET
@@ -428,27 +440,52 @@ OR REPLACE FUNCTION check_team_exists () RETURNS TRIGGER AS $$
 CREATE TRIGGER trg_check_project_team BEFORE INSERT ON z5_project FOR EACH ROW
 EXECUTE FUNCTION check_team_exists ();
 
--- Для task (проверка даты)
--- Предполагаем поля startdate и deadline в z5_task (или берем из project, но в задании сказано про ввод в task)
-ALTER TABLE z5_task
-ADD COLUMN date_issued DATE;
+INSERT INTO
+    z5_project (
+        id,
+        projectname,
+        about,
+        startdate,
+        enddate,
+        status,
+        price,
+        idcommand,
+        project_type,
+        shifr,
+        project_deadline,
+        mentor_id
+    )
+VALUES
+    (
+        5,
+        '12 лаба',
+        '12 лаба по базам данных',
+        '2025-09-28',
+        '2025-10-20',
+        'в работе',
+        0.0,
+        3,
+        'научный',
+        'PR0117',
+        30,
+        2
+    );
 
-ALTER TABLE z5_task
-ADD COLUMN date_due DATE;
-
-CREATE
-OR REPLACE FUNCTION check_task_dates () RETURNS TRIGGER AS $$
-                    BEGIN
-                        IF NEW.date_due < NEW.date_issued THEN
-                            RAISE EXCEPTION 'Ошибка: Дата выполнения меньше даты выдачи';
-                        END IF;
-                        RETURN NEW;
-                    END;
-                    $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_check_task_dates BEFORE INSERT ON z5_task FOR EACH ROW
-EXECUTE FUNCTION check_task_dates ();
-
+-- ALTER TABLE z5_task
+-- ADD COLUMN date_issued DATE;
+-- ALTER TABLE z5_task
+-- ADD COLUMN date_due DATE;
+-- CREATE
+-- OR REPLACE FUNCTION check_task_dates () RETURNS TRIGGER AS $$
+--                     BEGIN
+--                         IF NEW.date_due < NEW.date_issued THEN
+--                             RAISE EXCEPTION 'Ошибка: Дата выполнения меньше даты выдачи';
+--                         END IF;
+--                         RETURN NEW;
+--                     END;
+--                     $$ LANGUAGE plpgsql;
+-- CREATE TRIGGER trg_check_task_dates BEFORE INSERT ON z5_task FOR EACH ROW
+-- EXECUTE FUNCTION check_task_dates ();
 --                 • Создайте аналогичный триггер для контроля ввода данных в таблицу task. Также предусмотрите проверку ввода, которая не позволяла бы добавлять запись о задаче, если дата выполнения введена меньше даты выдачи задания. Проверьте работу триггера.
 CREATE
 OR REPLACE FUNCTION check_task_rules () RETURNS TRIGGER AS $$

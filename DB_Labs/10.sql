@@ -191,7 +191,7 @@ DO $$
                         IF D > 0 THEN
                             x1 := (-b + sqrt(D)) / (2*a);
                             x2 := (-b - sqrt(D)) / (2*a);
-                            RAISE NOTICE 'Два корня: x1=%, x2=%', x1, x2;
+                            RAISE DEBUG 'Два корня: x1=%, x2=%', x1, x2;
                         ELSIF D = 0 THEN
                             x1 := -b / (2*a);
                             RAISE NOTICE 'Один корень: x1=%', x1;
