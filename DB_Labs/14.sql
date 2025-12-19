@@ -170,7 +170,7 @@ LIMIT
 -- Planning Time: 0.419 ms
 -- Execution Time: 2937.667 ms
 -- (24 rows)
-CREATE INDEX IF NOT EXISTS idx_flights_scheduled_departure ON bookings.flights (scheduled_departure);
+CREATE INDEX IF NOT EXISTS idx_flights_scheduled_departure ON bookings.flights ();
 
 WITH
     target_flights AS (
@@ -432,7 +432,7 @@ HAVING
 -- passenger_id | names_found | distinct_name_count 
 -- --------------+-------------+---------------------
 -- (0 rows)
--- Думаю это ошибка данных. Поле passenger_id в этой базе представляет собой номер паспорта. Папорт уникален и принадлежит одному человеку.
+-- Думаю это не ошибка данных. Поле passenger_id в этой базе представляет собой номер паспорта. Папорт уникален и принадлежит одному человеку.
 -- Коллизий быть не должно, только есл не человеческий фактор, но можно предусмотреть exception
 --         3.4. Анализ временных рядов и визуализация полученных данных
 --             3.4.1. Построить столбчатую диаграмму количества бронирований по дням недели за последнюю неделю

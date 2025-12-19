@@ -231,39 +231,40 @@ UPDATE
 OR INSERT ON z5_project FOR EACH ROW
 EXECUTE FUNCTION log_price_change ();
 
+INSERT INTO
+    z5_project (projectname, idcommand, price)
+VALUES
+    ('Expensive Project', 1, 90000);
+
 --             1.1.4. (Использование курсоров). Используя курсорный цикл, увеличьте на 20% стоимость проектов тех команд, которые имеют более 3-х студентов в своём составе. В конце каждой итерации проверять, не получится ли данная стоимость более 10000 рублей, в случае нарушения условия отменить изменение стоимости.
 DO $$
-                DECLARE
-                    cur_projects CURSOR FOR 
-                        SELECT p.id, p.price, COUNT(s.id) as student_count
-                        FROM z5_project p
-                        JOIN z5_student s ON p.idcommand = s.idcommand
-                        GROUP BY p.id, p.price
-                        HAVING COUNT(s.id) > 3;
-                    
-                    rec RECORD;
-                    v_new_price NUMERIC;
-                BEGIN
-                    OPEN cur_projects;
-                    LOOP
-                        FETCH cur_projects INTO rec;
-                        EXIT WHEN NOT FOUND;
-                        
-                        v_new_price := rec.price * 1.20;
-                        
-                        SAVEPOINT sp_before_update;
-                        
-                        UPDATE z5_project SET price = v_new_price WHERE id = rec.id;
-                        
-                        IF v_new_price > 10000 THEN
-                            RAISE NOTICE 'Project % price would be %, rolling back update.', rec.id, v_new_price;
-                            ROLLBACK TO SAVEPOINT sp_before_update;
-                        ELSE
-                            RAISE NOTICE 'Project % updated to %', rec.id, v_new_price;
-                        END IF; 
-                    END LOOP;
-                    CLOSE cur_projects;
-                END $$;
+DECLARE
+    cur_projects CURSOR FOR 
+        SELECT p.id, p.price, COUNT(s.id) as student_count
+        FROM z5_project p
+        JOIN z5_student s ON p.idcommand = s.idcommand
+        GROUP BY p.id, p.price
+        HAVING COUNT(s.id) > 3;
+    
+    rec RECORD;
+    v_new_price NUMERIC;
+BEGIN
+    OPEN cur_projects;
+    LOOP
+        FETCH cur_projects INTO rec;
+        EXIT WHEN NOT FOUND;
+        
+        v_new_price := rec.price * 1.20;
+        
+        IF v_new_price > 10000 THEN
+            RAISE NOTICE 'Project % price would be %, skipping update.', rec.id, v_new_price;
+        ELSE
+            UPDATE z5_project SET price = v_new_price WHERE id = rec.id;
+            RAISE NOTICE 'Project % updated to %', rec.id, v_new_price;
+        END IF; 
+    END LOOP;
+    CLOSE cur_projects;
+END $$;
 
 --             1.1.5. Создание хранимых процедур. Добавьте в таблицу user_new два поля для хранения информации о домашнем и сотовом телефоне. Разработать процедуру для ввода записей в таблицу user_new. Данная процедура должна проверять, есть ли информация хотя бы об одном из телефонов для связи, и если такой информации нет, то не вводить данные.
 CREATE TABLE
@@ -403,6 +404,7 @@ OR REPLACE FUNCTION hash_sha256 (p_text TEXT, p_iterations INT DEFAULT 1) RETURN
 
 --             1.3.3. Создайте функцию на языке PL/pgSQL, которая будет вычислять хэш-значение для столбца типа TEXT. Хэширование должно выполняться с использованием алгоритма SHA-256. Также предусмотрите возможность передачи параметра, определяющего количество раз применения хэширования к одному значению.
 -- Заполнение данными (student1...student100)
+-
 DO $$
                 DECLARE
                     i INT;
@@ -417,6 +419,27 @@ DO $$
                     END LOOP;
                 END $$;
 
+--                 CREATE OR REPLACE FUNCTION calculate_multi_sha256(
+--     p_input TEXT, 
+--     p_rounds INT DEFAULT 1
+-- ) RETURNS TEXT AS $$
+-- DECLARE
+--     v_hash BYTEA;
+--     i INT;
+-- BEGIN
+--     IF p_input IS NULL THEN
+--         RETURN NULL;
+--     END IF;
+--     IF p_rounds < 1 THEN
+--         p_rounds := 1;
+--     END IF;
+--     v_hash := p_input::bytea;
+--     FOR i IN 1..p_rounds LOOP
+--         v_hash := sha256(v_hash);
+--     END LOOP;
+--     RETURN encode(v_hash, 'hex');
+-- END;
+-- $$ LANGUAGE plpgsql;
 --         1.4. Заполнение таблицы случайными данными в PostgreSQL: UUID, varchar
 --             1.4.1. Используя тип данных UUID сгенерируйте id произвольной таблицы
 --                 • Создайте таблицу с полыми:
@@ -471,17 +494,11 @@ OR REPLACE FUNCTION get_random_words (n INT) RETURNS TEXT AS $$
                         i INT;
                         total_words INT;
                     BEGIN
-                        -- Попытка прочитать файл (путь должен быть разрешен в postgresql.conf)
-                        -- Если не работает, раскомментируйте блок ниже для использования встроенного словаря
-                        
-                        -- BEGIN MOCK DATA (Если нет доступа к файлу)
                         words_array := ARRAY['apple', 'banana', 'project', 'database', 'sql', 'system', 'random', 'code', 'linux', 'server'];
-                        -- END MOCK DATA
                         
-                        /* Реальный код чтения (требует настройки прав):
-                        file_content := pg_read_file('/usr/share/dict/words'); -- Путь может требовать настройки
-                        words_array := string_to_array(file_content, E'\n');
-                        */
+                        -- file_content := pg_read_file('/usr/share/dict/words');
+                        -- words_array := string_to_array(file_content, E'\n');
+                        
                         
                         total_words := array_length(words_array, 1);
                         
@@ -494,6 +511,11 @@ OR REPLACE FUNCTION get_random_words (n INT) RETURNS TEXT AS $$
                     $$ LANGUAGE plpgsql;
 
 -- Применение: генерация описаний проектов
+SELECT
+    *
+FROM
+    get_random_words (5);
+
 UPDATE z5_project
 SET
     about = get_random_words (5)
@@ -521,23 +543,25 @@ CREATE TABLE
 -- 1. Регистрация пользователя
 CREATE
 OR REPLACE PROCEDURE register_user (p_username TEXT, p_password TEXT, p_role TEXT) LANGUAGE plpgsql AS $$
-                    DECLARE
-                        v_salt TEXT;
-                        v_hash TEXT;
-                        v_user_enc BYTEA;
-                    BEGIN
-                        v_salt := encode(gen_random_bytes(16), 'hex');
-                        
-                        v_hash := encode(digest(p_password || v_salt, 'sha256'), 'hex');
-                        
-                        v_user_enc := pgp_sym_encrypt(p_username, 'app_secret_key');
-                        
-                        INSERT INTO app_users (username_enc, password_hash, salt, role)
-                        VALUES (v_user_enc, v_hash, v_salt, p_role);
-                        
-                        RAISE NOTICE 'User registered successfully.';
-                    END;
-                    $$;
+DECLARE
+    v_salt TEXT;
+    v_hash TEXT;
+    v_user_fake_enc BYTEA;
+BEGIN
+    v_salt := replace(gen_random_uuid()::text, '-', '');
+
+    v_hash := md5(p_password || v_salt);
+
+    v_user_fake_enc := decode(encode(p_username::bytea, 'base64'), 'base64');
+
+    INSERT INTO app_users (username_enc, password_hash, salt, role)
+    VALUES (v_user_fake_enc, v_hash, v_salt, p_role);
+
+    RAISE NOTICE 'User registered';
+END;
+$$;
+
+CALL register_user ('admin_max', 'superpass123', 'admin');
 
 -- 2. Аутентификация
 CREATE
@@ -562,6 +586,12 @@ OR REPLACE FUNCTION authenticate_user (p_username TEXT, p_password TEXT) RETURNS
                     END;
                     $$ LANGUAGE plpgsql;
 
+SELECT
+    authenticate_user ('admin_max', 'superpass123');
+
+SELECT
+    authenticate_user ('admin_max', 'superpass12');
+
 -- 3. Функция генерации предложений (на основе словаря из 1.4)
 CREATE
 OR REPLACE FUNCTION generate_sentence (word_count INT) RETURNS TEXT AS $$
@@ -569,6 +599,9 @@ OR REPLACE FUNCTION generate_sentence (word_count INT) RETURNS TEXT AS $$
                         RETURN initcap(get_random_words(word_count)) || '.';
                     END;
                     $$ LANGUAGE plpgsql;
+
+SELECT
+    generate_sentence (10);
 
 -- Тестирование системы 1.5
 CALL register_user ('admin_max', 'superpass123', 'admin');
