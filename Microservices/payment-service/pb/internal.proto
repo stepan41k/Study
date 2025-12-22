@@ -1,0 +1,44 @@
+syntax = "proto3";
+package pb;
+option go_package = "./pb";
+
+// Методы для PaymentService
+service PaymentService {
+    rpc CreatePayment (CreatePaymentRequest) returns (PaymentResponse);
+}
+
+// Методы для OrderService
+service OrderService {
+    rpc UpdateOrderStatus (UpdateOrderStatusRequest) returns (Empty);
+}
+
+// Методы для ShippingService
+service ShippingService {
+    rpc CreateShipping (CreateShippingRequest) returns (ShippingResponse);
+}
+
+message Empty {}
+
+message CreatePaymentRequest {
+  int32 order_id = 1;
+  float amount = 2;
+}
+
+message PaymentResponse {
+  int32 payment_id = 1;
+  string status = 2;
+}
+
+message UpdateOrderStatusRequest {
+  int32 order_id = 1;
+  string new_status = 2;
+}
+
+message CreateShippingRequest {
+  int32 order_id = 1;
+  int32 user_id = 2; // Для адреса (упрощено)
+}
+
+message ShippingResponse {
+  int32 shipping_id = 1;
+}

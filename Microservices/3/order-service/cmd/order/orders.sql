@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS orders (
-		"id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		"item" TEXT,
-		"amount" REAL,
-		"status" TEXT
-)
