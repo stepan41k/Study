@@ -7,14 +7,14 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: users_db # База по умолчанию
+      POSTGRES_DB: users_db
     ports:
-      - "5435:5432" # Порт 5435 для доступа с локального ПК (DBeaver)
+      - '5435:5432'
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:z
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d users_db"]
+      test: ['CMD-SHELL', 'pg_isready -U user -d users_db']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -25,15 +25,13 @@ services:
     build: ./user-service
     container_name: micro_user
     ports:
-      - "8081:8080"   # HTTP REST
-      - "50051:50051" # gRPC
+      - '8081:8080'
+      - '50051:50051'
     environment:
-      PORT: "8080"
-      GRPC_PORT: "50051"
-      # Подключение к БД
-      DB_URL: "host=postgres user=user password=password dbname=users_db port=5432 sslmode=disable"
-      # НОВОЕ: Для получения списка заказов пользователя
-      ORDER_SERVICE_URL: "order-service:50051"
+      PORT: '8080'
+      GRPC_PORT: '50051'
+      DB_URL: 'host=postgres user=user password=password dbname=users_db port=5432 sslmode=disable'
+      ORDER_SERVICE_URL: 'order-service:50051'
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,20 +42,20 @@ services:
     build: ./order-service
     container_name: micro_order
     ports:
-      - "8082:8080"   # HTTP REST
-      - "50052:50051" # gRPC (Снаружи 50052, внутри 50051)
+      - '8082:8080'
+      - '50052:50051'
     environment:
-      PORT: "8080"
-      GRPC_PORT: "50051"
-      DB_URL: "host=postgres user=user password=password dbname=orders_db port=5432 sslmode=disable"
-      # Связи с другими сервисами
-      PAYMENT_SERVICE_URL: "payment-service:50051"
-      SHIPPING_SERVICE_URL: "shipping-service:50051"
-      # НОВОЕ: Для валидации пользователя перед созданием заказа
-      USER_SERVICE_URL: "user-service:50051"
+      PORT: '8080'
+      GRPC_PORT: '50051'
+      DB_URL: 'host=postgres user=user password=password dbname=orders_db port=5432 sslmode=disable'
+      PAYMENT_SERVICE_URL: 'payment-service:50051'
+      SHIPPING_SERVICE_URL: 'shipping-service:50051'
+      USER_SERVICE_URL: 'user-service:50051'
     depends_on:
       postgres:
         condition: service_healthy
+      user-service:
+        condition: service_started
     networks:
       - micro-net
 
@@ -65,15 +63,14 @@ services:
     build: ./payment-service
     container_name: micro_payment
     ports:
-      - "8083:8080"   # HTTP REST
-      - "50053:50051" # gRPC
+      - '8083:8080'
+      - '50053:50051'
     environment:
-      PORT: "8080"
-      GRPC_PORT: "50051"
-      DB_URL: "host=postgres user=user password=password dbname=payments_db port=5432 sslmode=disable"
-      # Связи для обновления статуса заказа и создания доставки
-      ORDER_SERVICE_URL: "order-service:50051"
-      SHIPPING_SERVICE_URL: "shipping-service:50051"
+      PORT: '8080'
+      GRPC_PORT: '50051'
+      DB_URL: 'host=postgres user=user password=password dbname=payments_db port=5432 sslmode=disable'
+      ORDER_SERVICE_URL: 'order-service:50051'
+      SHIPPING_SERVICE_URL: 'shipping-service:50051'
     depends_on:
       postgres:
         condition: service_healthy
@@ -84,12 +81,12 @@ services:
     build: ./shipping-service
     container_name: micro_shipping
     ports:
-      - "8084:8080"   # HTTP REST
-      - "50054:50051" # gRPC
+      - '8084:8080'
+      - '50054:50051'
     environment:
-      PORT: "8080"
-      GRPC_PORT: "50051"
-      DB_URL: "host=postgres user=user password=password dbname=shippings_db port=5432 sslmode=disable"
+      PORT: '8080'
+      GRPC_PORT: '50051'
+      DB_URL: 'host=postgres user=user password=password dbname=shippings_db port=5432 sslmode=disable'
     depends_on:
       postgres:
         condition: service_healthy

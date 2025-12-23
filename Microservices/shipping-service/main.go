@@ -24,7 +24,6 @@ type Shipping struct {
 
 var db *gorm.DB
 
-// gRPC Server Implementation
 type server struct {
 	pb.UnimplementedShippingServiceServer
 }
@@ -52,7 +51,6 @@ func main() {
 	}
 	db.AutoMigrate(&Shipping{})
 
-	// Запуск gRPC сервера в горутине
 	go func() {
 		lis, err := net.Listen("tcp", ":"+os.Getenv("GRPC_PORT"))
 		if err != nil {
@@ -66,7 +64,6 @@ func main() {
 		}
 	}()
 
-	// Запуск Gin HTTP сервера
 	r := gin.Default()
 	r.GET("/shippings", func(c *gin.Context) {
 		var shippings []Shipping

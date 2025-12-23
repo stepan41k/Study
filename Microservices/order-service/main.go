@@ -21,9 +21,9 @@ import (
 
 type Order struct {
 	ID     uint    `gorm:"primaryKey" json:"id"`
-	UserID int     `json:"user_id"`
-	Amount float32 `json:"amount"`
-	Status string  `json:"status"` // "created", "formed", "paid", "shipped"
+	UserID int     `json:"user_id" binding:"required"`
+	Amount float32 `json:"amount" binding:"required"`
+	Status string  `json:"status" binding:"required"` // "created", "formed", "paid", "shipped"
 }
 
 var db *gorm.DB
@@ -41,7 +41,7 @@ func (s *server) UpdateOrderStatus(ctx context.Context, req *pb.UpdateOrderStatu
 	}
 	order.Status = req.NewStatus
 	db.Save(&order)
-	log.Printf("Order %d status updated to %s via gRPC", order.ID, order.Status)
+	log.Printf("Order %d status updated to %s", order.ID, order.Status)
 	return &pb.Empty{}, nil
 }
 
@@ -84,12 +84,16 @@ func main() {
 		db.Create(&Order{UserID: 2, Amount: 250.00, Status: "created"})
 	}
 
-	connUser, _ := grpc.Dial(os.Getenv("USER_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
-    userClient = pb.NewUserServiceClient(connUser)
+	connUser, err := grpc.Dial(os.Getenv("USER_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Printf("Did not connect to User Service: %v", err) 
+	} else {
+		userClient = pb.NewUserServiceClient(connUser)
+	}	
 
 	conn, err := grpc.Dial(os.Getenv("PAYMENT_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Printf("Did not connect to Payment Service: %v", err) // Не падаем сразу, ждем поднятия
+		log.Printf("Did not connect to Payment Service: %v", err) 
 	} else {
 		paymentClient = pb.NewPaymentServiceClient(conn)
 	}
@@ -111,8 +115,8 @@ func main() {
 	r.POST("/orders", createOrder)
 	r.GET("/orders", getOrders)
 	r.GET("/orders/:id", getOrder)
-	r.PUT("/orders/:id/status", updateStatus)
-	r.PUT("/orders/:id/cancel", cancelOrder)
+	r.PUT("/orders/:id/status", updateStatus) // payment
+	r.PUT("/orders/:id/cancel", cancelOrder)  // payment
 
 	r.Run(":" + os.Getenv("PORT"))
 }
@@ -125,14 +129,14 @@ func createOrder(c *gin.Context) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-    defer cancel()
+	defer cancel()
 
-    _, err := userClient.GetUser(ctx, &pb.GetUserRequest{UserId: int32(order.UserID)})
-    if err != nil {
-        log.Printf("User validation failed: %v", err)
-        c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist or User Service unavailable"})
-        return
-    }
+	_, err := userClient.GetUser(ctx, &pb.GetUserRequest{UserId: int32(order.UserID)})
+	if err != nil {
+		log.Printf("User validation failed: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist or User Service unavailable"})
+		return
+	}
 
 	order.Status = "created"
 	db.Create(&order)
@@ -169,7 +173,7 @@ func updateStatus(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 		return
 	}
-
+	
 	order.Status = input.Status
 	db.Save(&order)
 
@@ -197,38 +201,37 @@ func updateStatus(c *gin.Context) {
 }
 
 func cancelOrder(c *gin.Context) {
-    id := c.Param("id")
-    var order Order
-    if err := db.First(&order, id).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
-        return
-    }
+	id := c.Param("id")
+	var order Order
+	if err := db.First(&order, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		return
+	}
 
-    if order.Status == "cancelled" {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Already cancelled"})
-        return
-    }
+	if order.Status == "cancelled" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Already cancelled"})
+		return
+	}
 
-    // 1. Локальная отмена
-    previousStatus := order.Status
-    order.Status = "cancelled"
-    db.Save(&order)
+	previousStatus := order.Status
+	order.Status = "cancelled"
+	db.Save(&order)
 
-    if previousStatus == "formed" || previousStatus == "paid" {
-        go func(orderID uint) {
-            ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-            defer cancel()
-            
-            _, err := paymentClient.FailPayment(ctx, &pb.FailPaymentRequest{
-                OrderId: int32(orderID),
-            })
-            if err != nil {
-                log.Printf("Failed to cancel payment for order %d: %v", orderID, err)
-            } else {
-                log.Printf("Payment cancellation requested for order %d", orderID)
-            }
-        }(order.ID)
-    }
+	if previousStatus == "formed" || previousStatus == "paid" {
+		go func(orderID uint) {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 
-    c.JSON(http.StatusOK, gin.H{"message": "Order cancelled", "status": order.Status})
+			_, err := paymentClient.FailPayment(ctx, &pb.FailPaymentRequest{
+				OrderId: int32(orderID),
+			})
+			if err != nil {
+				log.Printf("Failed to cancel payment for order %d: %v", orderID, err)
+			} else {
+				log.Printf("Payment cancellation requested for order %d", orderID)
+			}
+		}(order.ID)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Order cancelled", "status": order.Status})
 }
