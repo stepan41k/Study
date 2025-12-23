@@ -8,11 +8,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/stepan41k/Microservices/payment-service/pb"
+	pb "github.com/stepan41k/protos/grpc_microservices/pb"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -45,6 +47,38 @@ func (s *server) CreatePayment(ctx context.Context, req *pb.CreatePaymentRequest
 	}
 	log.Printf("Payment created for Order %d", req.OrderId)
 	return &pb.PaymentResponse{PaymentId: int32(payment.ID), Status: payment.Status}, nil
+}
+
+func (s *server) FailPayment(ctx context.Context, req *pb.FailPaymentRequest) (*pb.Empty, error) {
+	var payment Payment
+
+	// 1. Ищем платеж, привязанный к заказу
+	if err := db.Where("order_id = ?", req.OrderId).First(&payment).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Если платежа нет, можно считать, что "отмена успешна" (идемпотентность),
+			// либо вернуть ошибку. Для надежности вернем ошибку, чтобы OrderService знал.
+			log.Printf("Payment for order %d not found", req.OrderId)
+			return nil, status.Errorf(codes.NotFound, "Payment for order %d not found", req.OrderId)
+		}
+		return nil, status.Error(codes.Internal, "Database error")
+	}
+
+	// 2. Логика проверки статуса (опционально)
+	// Если уже "paid", то в реальности нужно делать Refund (возврат).
+	// Для лабы просто помечаем как failed/refunded.
+	if payment.Status == "failed" {
+		return &pb.Empty{}, nil // Уже отменено
+	}
+
+	// 3. Обновление статуса
+	payment.Status = "failed"
+	if err := db.Save(&payment).Error; err != nil {
+		log.Printf("Failed to update payment status: %v", err)
+		return nil, status.Error(codes.Internal, "Failed to update payment")
+	}
+
+	log.Printf("Payment for order %d marked as failed", req.OrderId)
+	return &pb.Empty{}, nil
 }
 
 func main() {
@@ -90,7 +124,6 @@ func main() {
 		c.JSON(http.StatusOK, payments)
 	})
 	
-	// Метод для симуляции оплаты пользователем
 	r.PUT("/payments/:id/pay", processPayment)
 
 	r.Run(":" + os.Getenv("PORT"))

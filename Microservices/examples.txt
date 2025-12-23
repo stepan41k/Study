@@ -1,0 +1,42 @@
+type User struct {
+	ID    uint   `gorm:"primaryKey" json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+http://localhost:8081/users                     //POST
+http://localhost:8081/users                     //GET
+http://localhost:8081/users/?id                 //GET
+http://localhost:8081/users/?id/full            //GET
+
+
+type Order struct {
+	ID     uint    `gorm:"primaryKey" json:"id"`
+	UserID int     `json:"user_id"`
+	Amount float32 `json:"amount"`
+	Status string  `json:"status"` // "created", "formed", "paid", "shipped"
+}
+http://localhost:8082/orders                    //POST
+http://localhost:8082/orders                    //GET
+http://localhost:8082/orders/?id                //GET
+http://localhost:8082/orders/?id/status         //PUT
+http://localhost:8082/orders/?id/cancel         //PUT
+
+
+type Payment struct {
+	ID      uint    `gorm:"primaryKey" json:"id"`
+	OrderID int32   `json:"order_id"`
+	Amount  float32 `json:"amount"`
+	Status  string  `json:"status"` // "pending", "paid", "failed"
+}
+http://localhost:8083/payments                  //GET
+http://localhost:8083/payments/?id/pay          //PUT
+
+
+type Shipping struct {
+	ID      uint   `gorm:"primaryKey" json:"id"`
+	OrderID int32  `json:"order_id"`
+	UserID  int32  `json:"user_id"`
+	Status  string `json:"status"` // "pending", "shipped"
+}
+http://localhost:8084/shippings                 //GET
+http://localhost:8084/shippings                 //POST

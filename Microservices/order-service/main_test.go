@@ -2,89 +2,124 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
-	"net/http/httptest"
 	"testing"
+	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/glebarez/sqlite"
-	"github.com/stepan41k/Microservices/order-service/pb"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"gorm.io/gorm"
 )
 
-// MockPaymentClient имитирует gRPC клиент сервиса оплаты
-type MockPaymentClient struct {
-	pb.UnimplementedPaymentServiceServer // Встраиваем для совместимости
-	CreatePaymentFunc func(ctx context.Context, in *pb.CreatePaymentRequest, opts ...grpc.CallOption) (*pb.PaymentResponse, error)
+// DTO структуры для общения с API
+type OrderDTO struct {
+	ID      uint    `json:"id"`
+	UserID  uint    `json:"user_id"`
+	Amount  float64 `json:"amount"`
+	Status  string  `json:"status"`
 }
 
-// Реализуем интерфейс клиента (обратите внимание, сигнатура клиента чуть отличается от сервера opts...)
-func (m *MockPaymentClient) CreatePayment(ctx context.Context, in *pb.CreatePaymentRequest, opts ...grpc.CallOption) (*pb.PaymentResponse, error) {
-	if m.CreatePaymentFunc != nil {
-		return m.CreatePaymentFunc(ctx, in, opts...)
+type PaymentDTO struct {
+	ID      uint    `json:"id"`
+	OrderID uint    `json:"order_id"`
+	Status  string  `json:"status"`
+	Amount  float64 `json:"amount"`
+}
+
+const (
+	orderServiceURL   = "http://localhost:8082"
+	paymentServiceURL = "http://localhost:8083"
+)
+
+func TestE2E_CreateOrder(t *testing.T) {
+	// 1. Подготовка данных
+	order := OrderDTO{
+		UserID: 1, 
+		Amount: 500,
 	}
-	return &pb.PaymentResponse{PaymentId: 100, Status: "pending"}, nil
-}
-
-func setupTestDB() *gorm.DB {
-	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	db.AutoMigrate(&Order{})
-	return db
-}
-
-func TestCreateOrder(t *testing.T) {
-	db = setupTestDB()
-	r := gin.Default()
-	r.POST("/orders", createOrder)
-
-	order := Order{UserID: 1, Amount: 500}
 	jsonValue, _ := json.Marshal(order)
 
-	req, _ := http.NewRequest("POST", "/orders", bytes.NewBuffer(jsonValue))
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+	// 2. Выполнение запроса
+	resp, err := http.Post(orderServiceURL+"/orders", "application/json", bytes.NewBuffer(jsonValue))
+	assert.NoError(t, err)
+	defer resp.Body.Close()
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	
-	var resp Order
-	json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.Equal(t, "created", resp.Status)
+	// 3. Проверка
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var createdOrder OrderDTO
+	body, _ := io.ReadAll(resp.Body)
+	json.Unmarshal(body, &createdOrder)
+
+	assert.NotZero(t, createdOrder.ID)
+	assert.Equal(t, "created", createdOrder.Status) // Ожидаем начальный статус
+	assert.Equal(t, 500.0, createdOrder.Amount)
 }
 
-func TestUpdateStatus_Formed_TriggersPayment(t *testing.T) {
-	db = setupTestDB()
-	// Создаем заказ
-	existingOrder := Order{UserID: 1, Amount: 100, Status: "created"}
-	db.Create(&existingOrder)
+func TestE2E_UpdateStatus_Formed_TriggersPayment(t *testing.T) {
+	// 1. Сначала создаем заказ, чтобы у нас был реальный ID
+	newOrder := OrderDTO{UserID: 2, Amount: 100}
+	createPayload, _ := json.Marshal(newOrder)
+	
+	createResp, err := http.Post(orderServiceURL+"/orders", "application/json", bytes.NewBuffer(createPayload))
+	assert.NoError(t, err)
+	defer createResp.Body.Close()
 
-	// Мокаем gRPC клиент
-	called := false
-	paymentClient = &MockPaymentClient{
-		CreatePaymentFunc: func(ctx context.Context, in *pb.CreatePaymentRequest, opts ...grpc.CallOption) (*pb.PaymentResponse, error) {
-			called = true
-			assert.Equal(t, int32(1), in.OrderId)
-			return &pb.PaymentResponse{PaymentId: 999, Status: "pending"}, nil
-		},
+	var createdOrder OrderDTO
+	bodyBytes, _ := io.ReadAll(createResp.Body)
+	json.Unmarshal(bodyBytes, &createdOrder)
+	orderID := createdOrder.ID
+
+	// 2. Меняем статус заказа на "formed"
+	// Это действие должно триггернуть gRPC вызов к сервису Оплаты
+	statusUpdate := map[string]string{"status": "formed"}
+	updatePayload, _ := json.Marshal(statusUpdate)
+	
+	client := &http.Client{}
+	req, _ := http.NewRequest("PUT", fmt.Sprintf("%s/orders/%d/status", orderServiceURL, orderID), bytes.NewBuffer(updatePayload))
+	req.Header.Set("Content-Type", "application/json")
+	
+	updateResp, err := client.Do(req)
+	assert.NoError(t, err)
+	defer updateResp.Body.Close()
+	
+	assert.Equal(t, http.StatusOK, updateResp.StatusCode)
+
+	// Проверяем, что статус заказа действительно обновился
+	var updatedOrder OrderDTO
+	updateBody, _ := io.ReadAll(updateResp.Body)
+	json.Unmarshal(updateBody, &updatedOrder)
+	assert.Equal(t, "formed", updatedOrder.Status)
+
+	// 3. ПРОВЕРКА ИНТЕГРАЦИИ (Вместо MockPaymentClient)
+	// Мы идем в Payment Service и проверяем, создался ли там платеж для нашего заказа.
+	
+	// Небольшая задержка, на случай если gRPC вызов асинхронный (можно убрать, если синхронный)
+	time.Sleep(100 * time.Millisecond)
+
+	// Получаем все платежи (в идеале должен быть метод GetPaymentByOrderID, но используем список для простоты)
+	paymentResp, err := http.Get(paymentServiceURL + "/payments")
+	assert.NoError(t, err)
+	defer paymentResp.Body.Close()
+
+	var payments []PaymentDTO
+	payBody, _ := io.ReadAll(paymentResp.Body)
+	json.Unmarshal(payBody, &payments)
+
+	// Ищем наш платеж
+	var foundPayment *PaymentDTO
+	for _, p := range payments {
+		if p.OrderID == orderID { // Ищем платеж, привязанный к нашему ID заказа
+			foundPayment = &p
+			break
+		}
 	}
 
-	r := gin.Default()
-	r.PUT("/orders/:id/status", updateStatus)
-
-	// Шлем запрос на смену статуса
-	body := []byte(`{"status": "formed"}`)
-	req, _ := http.NewRequest("PUT", "/orders/1/status", bytes.NewBuffer(body))
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.True(t, called, "gRPC метод CreatePayment должен быть вызван")
-	
-	// Проверяем статус в БД
-	var updatedOrder Order
-	db.First(&updatedOrder, 1)
-	assert.Equal(t, "formed", updatedOrder.Status)
+	// 4. Утверждаем, что платеж существует
+	if assert.NotNil(t, foundPayment, "Платеж не был создан в Payment Service (gRPC вызов не прошел?)") {
+		assert.Equal(t, "pending", foundPayment.Status)
+		// Проверка суммы (опционально, если логика передает сумму)
+		// assert.Equal(t, 100.0, foundPayment.Amount) 
+	}
 }

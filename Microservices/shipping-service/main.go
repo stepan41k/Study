@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/stepan41k/Microservices/shipping-service/pb" // Предполагается локальная копия pb
+	pb "github.com/stepan41k/protos/grpc_microservices/pb"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"

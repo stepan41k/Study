@@ -3,71 +3,102 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    container_name: micro_postgres
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: users_db # База по умолчанию
     ports:
-      - "5435:5432" # Оставляю 5435, чтобы не конфликтовало с вашей локальной БД
+      - "5435:5432" # Порт 5435 для доступа с локального ПК (DBeaver)
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    # --- ДОБАВЛЕНО: Проверка здоровья БД ---
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      # Проверяем готовность, пингуя пользователя 'user'
-      test: ["CMD-SHELL", "pg_isready -U user"] 
-      interval: 5s      # Как часто проверять
-      timeout: 5s       # Сколько ждать ответа
-      retries: 5        # Сколько раз пытаться перед тем как сдаться
-    # ---------------------------------------
+      test: ["CMD-SHELL", "pg_isready -U user -d users_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - micro-net
 
   user-service:
     build: ./user-service
+    container_name: micro_user
     ports:
-      - "8081:8080"
+      - "8081:8080"   # HTTP REST
+      - "50051:50051" # gRPC
     environment:
+      PORT: "8080"
+      GRPC_PORT: "50051"
+      # Подключение к БД
       DB_URL: "host=postgres user=user password=password dbname=users_db port=5432 sslmode=disable"
+      # НОВОЕ: Для получения списка заказов пользователя
+      ORDER_SERVICE_URL: "order-service:50051"
     depends_on:
       postgres:
-        condition: service_healthy # Ждем, пока healthcheck базы скажет "OK"
+        condition: service_healthy
+    networks:
+      - micro-net
 
   order-service:
     build: ./order-service
+    container_name: micro_order
     ports:
-      - "8082:8080"
-      - "50052:50051"
+      - "8082:8080"   # HTTP REST
+      - "50052:50051" # gRPC (Снаружи 50052, внутри 50051)
     environment:
+      PORT: "8080"
+      GRPC_PORT: "50051"
       DB_URL: "host=postgres user=user password=password dbname=orders_db port=5432 sslmode=disable"
+      # Связи с другими сервисами
       PAYMENT_SERVICE_URL: "payment-service:50051"
-      PORT: 8080
-      GRPC_PORT: 50051
+      SHIPPING_SERVICE_URL: "shipping-service:50051"
+      # НОВОЕ: Для валидации пользователя перед созданием заказа
+      USER_SERVICE_URL: "user-service:50051"
     depends_on:
       postgres:
         condition: service_healthy
-      # Сервисы могут зависеть друг от друга, но пока достаточно БД
-      
+    networks:
+      - micro-net
+
   payment-service:
     build: ./payment-service
+    container_name: micro_payment
     ports:
-      - "8083:8080"
-      - "50053:50051"
+      - "8083:8080"   # HTTP REST
+      - "50053:50051" # gRPC
     environment:
+      PORT: "8080"
+      GRPC_PORT: "50051"
       DB_URL: "host=postgres user=user password=password dbname=payments_db port=5432 sslmode=disable"
+      # Связи для обновления статуса заказа и создания доставки
       ORDER_SERVICE_URL: "order-service:50051"
       SHIPPING_SERVICE_URL: "shipping-service:50051"
-      PORT: 8080
-      GRPC_PORT: 50051
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - micro-net
 
   shipping-service:
     build: ./shipping-service
+    container_name: micro_shipping
     ports:
-      - "8084:8080"
-      - "50054:50051"
+      - "8084:8080"   # HTTP REST
+      - "50054:50051" # gRPC
     environment:
+      PORT: "8080"
+      GRPC_PORT: "50051"
       DB_URL: "host=postgres user=user password=password dbname=shippings_db port=5432 sslmode=disable"
-      PORT: 8080
-      GRPC_PORT: 50051
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - micro-net
+
+networks:
+  micro-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

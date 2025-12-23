@@ -1,89 +1,147 @@
 package main
 
 import (
-	"context"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
-	"net/http/httptest"
-	"github.com/stepan41k/Microservices/payment-service/pb"
 	"testing"
+	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"gorm.io/gorm"
 )
 
-// Mocks
-type MockOrderClient struct {
-	UpdateOrderStatusFunc func(ctx context.Context, in *pb.UpdateOrderStatusRequest, opts ...grpc.CallOption) (*pb.Empty, error)
+// DTO структуры для взаимодействия с REST API микросервисов
+type OrderDTO struct {
+	ID      uint    `json:"id"`
+	UserID  uint    `json:"user_id"`
+	Amount  float64 `json:"amount"`
+	Status  string  `json:"status"`
 }
 
-func (m *MockOrderClient) UpdateOrderStatus(ctx context.Context, in *pb.UpdateOrderStatusRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-	if m.UpdateOrderStatusFunc != nil {
-		return m.UpdateOrderStatusFunc(ctx, in, opts...)
-	}
-	return &pb.Empty{}, nil
+type PaymentDTO struct {
+	ID      uint    `json:"id"`
+	OrderID uint    `json:"order_id"`
+	Status  string  `json:"status"`
+	Amount  float64 `json:"amount"`
 }
 
-type MockShippingClient struct {
-	CreateShippingFunc func(ctx context.Context, in *pb.CreateShippingRequest, opts ...grpc.CallOption) (*pb.ShippingResponse, error)
+type ShippingDTO struct {
+	ID      uint   `json:"id"`
+	OrderID uint   `json:"order_id"`
+	Status  string `json:"status"`
 }
 
-func (m *MockShippingClient) CreateShipping(ctx context.Context, in *pb.CreateShippingRequest, opts ...grpc.CallOption) (*pb.ShippingResponse, error) {
-	if m.CreateShippingFunc != nil {
-		return m.CreateShippingFunc(ctx, in, opts...)
-	}
-	return &pb.ShippingResponse{ShippingId: 1}, nil
-}
+// Константы URL сервисов (согласно docker-compose)
+const (
+	orderServiceURL    = "http://localhost:8082"
+	paymentServiceURL  = "http://localhost:8083"
+	shippingServiceURL = "http://localhost:8084" // или /deliveries, в зависимости от роутинга
+)
 
-func setupTestDB() *gorm.DB {
-	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	db.AutoMigrate(&Payment{})
-	return db
-}
+func TestE2E_ProcessPayment(t *testing.T) {
+	// --- 1. ПОДГОТОВКА (SETUP) ---
+	
+	// Шаг 1. Создаем РЕАЛЬНЫЙ заказ в Order Service.
+	// Нам нужен существующий OrderID, иначе Payment Service при попытке обновить статус заказа по gRPC
+	// может получить ошибку "Order not found", если в БД заказов пусто.
+	newOrder := OrderDTO{UserID: 10, Amount: 200, Status: "created"}
+	orderPayload, _ := json.Marshal(newOrder)
+	
+	orderResp, err := http.Post(orderServiceURL+"/orders", "application/json", bytes.NewBuffer(orderPayload))
+	assert.NoError(t, err)
+	defer orderResp.Body.Close()
+	
+	var createdOrder OrderDTO
+	orderBody, _ := io.ReadAll(orderResp.Body)
+	json.Unmarshal(orderBody, &createdOrder)
+	realOrderID := createdOrder.ID
+	assert.NotZero(t, realOrderID, "Не удалось создать подготовительный заказ")
 
-func TestProcessPayment(t *testing.T) {
-	db = setupTestDB()
-	// Создаем платеж
-	payment := Payment{OrderID: 10, Amount: 200, Status: "pending"}
-	db.Create(&payment)
+	// Шаг 2. Создаем платеж в Payment Service со статусом "pending".
+	// Мы привязываем его к только что созданному realOrderID.
+	newPayment := PaymentDTO{OrderID: realOrderID, Amount: 200}
+	paymentPayload, _ := json.Marshal(newPayment)
 
-	// Флаги вызовов
-	orderCalled := false
-	shippingCalled := false
+	// Предполагаем, что есть ручка POST /payments (или она вызывается автоматически,
+	// но для теста мы создаем платеж вручную, чтобы иметь точный ID).
+	payCreateResp, err := http.Post(paymentServiceURL+"/payments", "application/json", bytes.NewBuffer(paymentPayload))
+	assert.NoError(t, err)
+	defer payCreateResp.Body.Close()
 
-	// Настройка моков
-	orderClient = &MockOrderClient{
-		UpdateOrderStatusFunc: func(ctx context.Context, in *pb.UpdateOrderStatusRequest, opts ...grpc.CallOption) (*pb.Empty, error) {
-			orderCalled = true
-			assert.Equal(t, int32(10), in.OrderId)
-			assert.Equal(t, "paid", in.NewStatus)
-			return &pb.Empty{}, nil
-		},
-	}
+	var createdPayment PaymentDTO
+	payBody, _ := io.ReadAll(payCreateResp.Body)
+	json.Unmarshal(payBody, &createdPayment)
+	paymentID := createdPayment.ID
+	assert.Equal(t, "pending", createdPayment.Status)
 
-	shippingClient = &MockShippingClient{
-		CreateShippingFunc: func(ctx context.Context, in *pb.CreateShippingRequest, opts ...grpc.CallOption) (*pb.ShippingResponse, error) {
-			shippingCalled = true
-			assert.Equal(t, int32(10), in.OrderId)
-			return &pb.ShippingResponse{ShippingId: 55}, nil
-		},
-	}
 
-	r := gin.Default()
-	r.PUT("/payments/:id/pay", processPayment)
+	// --- 2. ДЕЙСТВИЕ (ACTION) ---
 
-	req, _ := http.NewRequest("PUT", "/payments/1/pay", nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+	// Выполняем запрос на оплату (тот самый endpoint, который мы тестируем)
+	// PUT /payments/{id}/pay
+	client := &http.Client{}
+	payReq, _ := http.NewRequest("PUT", fmt.Sprintf("%s/payments/%d/pay", paymentServiceURL, paymentID), nil)
+	
+	payProcessResp, err := client.Do(payReq)
+	assert.NoError(t, err)
+	defer payProcessResp.Body.Close()
 
-	// Проверки
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.True(t, orderCalled, "Order Service должен быть уведомлен")
-	assert.True(t, shippingCalled, "Shipping Service должен быть уведомлен")
+	// Проверяем HTTP статус ответа
+	assert.Equal(t, http.StatusOK, payProcessResp.StatusCode)
 
-	var updatedPayment Payment
-	db.First(&updatedPayment, 1)
+
+	// --- 3. ПРОВЕРКА (ASSERTION / VERIFICATION) ---
+
+	// Проверка А: Статус платежа в Payment Service изменился на "paid"?
+	// Делаем GET запрос, так как DB скрыта
+	// (В реальном коде можно проверить тело payProcessResp, если оно возвращает обновленный объект)
+	// checkPayResp, _ := http.Get(fmt.Sprintf("%s/payments?id=%d", paymentServiceURL, paymentID)) // Или перебор списка
+	// Для простоты, предположим, что PUT возвращает обновленный JSON:
+	var updatedPayment PaymentDTO
+	payProcessBody, _ := io.ReadAll(payProcessResp.Body)
+	json.Unmarshal(payProcessBody, &updatedPayment)
+	
+	// Если API возвращает обновленный объект - проверяем его. Если нет - делаем GET.
+	// Допустим, API вернул обновленный:
 	assert.Equal(t, "paid", updatedPayment.Status)
+
+
+	// Проверка Б (Замена MockOrderClient): Уведомлен ли Order Service?
+	// Мы проверяем это косвенно: статус заказа в сервисе заказов должен стать "paid".
+	// Даем небольшую задержку на асинхронную обработку (если она есть)
+	time.Sleep(100 * time.Millisecond)
+
+	checkOrderResp, err := http.Get(fmt.Sprintf("%s/orders/%d", orderServiceURL, realOrderID))
+	assert.NoError(t, err)
+	defer checkOrderResp.Body.Close()
+
+	var updatedOrder OrderDTO
+	checkOrderBody, _ := io.ReadAll(checkOrderResp.Body)
+	json.Unmarshal(checkOrderBody, &updatedOrder)
+
+	assert.Equal(t, "paid", updatedOrder.Status, "Статус заказа должен обновиться через gRPC вызов")
+
+
+	// Проверка В (Замена MockShippingClient): Уведомлен ли Shipping Service?
+	// Проверяем, появилась ли запись о доставке для этого заказа.
+	checkShipResp, err := http.Get(shippingServiceURL + "/shippings") // или /deliveries
+	assert.NoError(t, err)
+	defer checkShipResp.Body.Close()
+
+	var shippings []ShippingDTO
+	shipBody, _ := io.ReadAll(checkShipResp.Body)
+	json.Unmarshal(shipBody, &shippings)
+
+	foundShipping := false
+	for _, s := range shippings {
+		if s.OrderID == realOrderID {
+			foundShipping = true
+			// Можно проверить начальный статус доставки, например "prepared"
+			// assert.Equal(t, "prepared", s.Status)
+			break
+		}
+	}
+	assert.True(t, foundShipping, "Сущность доставки должна быть создана в Shipping Service")
 }

@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stepan41k/Microservices/order-service/pb"
+	pb "github.com/stepan41k/protos/grpc_microservices/pb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -26,8 +28,8 @@ type Order struct {
 
 var db *gorm.DB
 var paymentClient pb.PaymentServiceClient
+var userClient pb.UserServiceClient
 
-// gRPC Server для приема обновлений статуса
 type server struct {
 	pb.UnimplementedOrderServiceServer
 }
@@ -43,8 +45,30 @@ func (s *server) UpdateOrderStatus(ctx context.Context, req *pb.UpdateOrderStatu
 	return &pb.Empty{}, nil
 }
 
+func (s *server) GetUserOrders(ctx context.Context, req *pb.GetUserOrdersRequest) (*pb.GetUserOrdersResponse, error) {
+	var orders []Order
+
+	result := db.Where("user_id = ?", req.UserId).Find(&orders)
+	if result.Error != nil {
+		log.Printf("Error fetching orders for user %d: %v", req.UserId, result.Error)
+		return nil, status.Error(codes.Internal, "Database error")
+	}
+
+	var pbOrders []*pb.Order
+	for _, o := range orders {
+		pbOrders = append(pbOrders, &pb.Order{
+			Id:     int32(o.ID),
+			Amount: float32(o.Amount),
+			Status: o.Status,
+		})
+	}
+
+	return &pb.GetUserOrdersResponse{
+		Orders: pbOrders,
+	}, nil
+}
+
 func main() {
-	// Подключение к БД
 	dsn := os.Getenv("DB_URL")
 	var err error
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -55,13 +79,14 @@ func main() {
 
 	var count int64
 
-	// Seed Data
 	if err := db.Model(&Order{}).Count(&count); err == nil && count == 0 {
 		db.Create(&Order{UserID: 1, Amount: 100.50, Status: "created"})
 		db.Create(&Order{UserID: 2, Amount: 250.00, Status: "created"})
 	}
 
-	// Подключение к Payment Service (Client)
+	connUser, _ := grpc.Dial(os.Getenv("USER_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+    userClient = pb.NewUserServiceClient(connUser)
+
 	conn, err := grpc.Dial(os.Getenv("PAYMENT_SERVICE_URL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("Did not connect to Payment Service: %v", err) // Не падаем сразу, ждем поднятия
@@ -69,7 +94,6 @@ func main() {
 		paymentClient = pb.NewPaymentServiceClient(conn)
 	}
 
-	// Запуск gRPC сервера (Server)
 	go func() {
 		lis, err := net.Listen("tcp", ":"+os.Getenv("GRPC_PORT"))
 		if err != nil {
@@ -83,12 +107,12 @@ func main() {
 		}
 	}()
 
-	// Gin Handlers
 	r := gin.Default()
 	r.POST("/orders", createOrder)
 	r.GET("/orders", getOrders)
 	r.GET("/orders/:id", getOrder)
-	r.PUT("/orders/:id/status", updateStatus) // Здесь триггер логики
+	r.PUT("/orders/:id/status", updateStatus)
+	r.PUT("/orders/:id/cancel", cancelOrder)
 
 	r.Run(":" + os.Getenv("PORT"))
 }
@@ -99,6 +123,17 @@ func createOrder(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+    defer cancel()
+
+    _, err := userClient.GetUser(ctx, &pb.GetUserRequest{UserId: int32(order.UserID)})
+    if err != nil {
+        log.Printf("User validation failed: %v", err)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "User does not exist or User Service unavailable"})
+        return
+    }
+
 	order.Status = "created"
 	db.Create(&order)
 	c.JSON(http.StatusOK, order)
@@ -119,7 +154,6 @@ func getOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, order)
 }
 
-// updateStatus - Ключевой метод задания
 func updateStatus(c *gin.Context) {
 	id := c.Param("id")
 	var input struct {
@@ -139,7 +173,6 @@ func updateStatus(c *gin.Context) {
 	order.Status = input.Status
 	db.Save(&order)
 
-	// Сценарий 1: Если статус "formed", автоматически создаем Оплату
 	if input.Status == "formed" {
 		if paymentClient == nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment service unavailable"})
@@ -147,7 +180,7 @@ func updateStatus(c *gin.Context) {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		
+
 		_, err := paymentClient.CreatePayment(ctx, &pb.CreatePaymentRequest{
 			OrderId: int32(order.ID),
 			Amount:  order.Amount,
@@ -161,4 +194,41 @@ func updateStatus(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, order)
+}
+
+func cancelOrder(c *gin.Context) {
+    id := c.Param("id")
+    var order Order
+    if err := db.First(&order, id).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+        return
+    }
+
+    if order.Status == "cancelled" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Already cancelled"})
+        return
+    }
+
+    // 1. Локальная отмена
+    previousStatus := order.Status
+    order.Status = "cancelled"
+    db.Save(&order)
+
+    if previousStatus == "formed" || previousStatus == "paid" {
+        go func(orderID uint) {
+            ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+            defer cancel()
+            
+            _, err := paymentClient.FailPayment(ctx, &pb.FailPaymentRequest{
+                OrderId: int32(orderID),
+            })
+            if err != nil {
+                log.Printf("Failed to cancel payment for order %d: %v", orderID, err)
+            } else {
+                log.Printf("Payment cancellation requested for order %d", orderID)
+            }
+        }(order.ID)
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "Order cancelled", "status": order.Status})
 }
