@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="24dp"
+    android:paddingBottom="8dp"
+    android:paddingHorizontal="20dp">
+
+    <TextView
+        android:id="@+id/dayName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ПОНЕДЕЛЬНИК"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary_brand"
+        android:letterSpacing="0.05" />
+
+    <!-- Разделительная линия -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="3dp"
+        android:background="@color/primary_brand"
+        android:layout_marginTop="4dp"/>
+
+</LinearLayout>

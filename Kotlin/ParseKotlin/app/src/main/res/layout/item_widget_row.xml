@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="4dp"
+    android:gravity="center_vertical">
+
+    <!-- Время (вертикально: начало и конец) -->
+    <!-- Убрали лишние отступы, minWidth задает ширину колонки времени -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:minWidth="36dp">
+
+        <TextView
+            android:id="@+id/rowTimeStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="11:00"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#333333" />
+
+        <TextView
+            android:id="@+id/rowTimeEnd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:00"
+            android:textSize="11sp"
+            android:textColor="#757575" />
+    </LinearLayout>
+
+    <!-- Цветной индикатор -->
+    <ImageView
+        android:id="@+id/rowTypeIndicator"
+        android:layout_width="4dp"
+        android:layout_height="match_parent"
+        android:background="#1B4332"
+        android:layout_marginHorizontal="8dp"
+        android:minHeight="32dp"/>
+
+    <!-- Информация о предмете -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/rowSubject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Разработка мобильных приложений"
+            android:textSize="13sp"
+            android:textColor="#212121"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/rowRoom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3301"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#555555" />
+
+            <TextView
+                android:id="@+id/rowTeacher"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Преподаватель И.О."
+                android:textSize="11sp"
+                android:textColor="#757575"
+                android:layout_marginStart="8dp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

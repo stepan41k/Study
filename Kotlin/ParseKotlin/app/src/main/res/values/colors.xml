@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="brand_green_dark">#2D6A4F</color>
+    <color name="brand_green_text">#1B4332</color>
+    <color name="brand_green_light">#D8F3DC</color>
+    <color name="brand_green_muted">#74C69D</color>
+
+    <color name="primary_brand">@color/brand_green_dark</color>
+
+    <color name="background_light">#F2F4F7</color>
+    <color name="text_primary">#1A1C1E</color>
+    <color name="text_secondary">#6C757D</color>
+
+    <color name="lecture_color">#2D6A4F</color>
+    <color name="practice_color">#1B4332</color>
+    <color name="lab_color">#74C69D</color>
+    <color name="seminar_color">#F59E0B</color>
+    <color name="lecpract_color">#10B981</color>
+    <color name="all_color">#EF4444</color>
+    <color name="other_color">#64748B</color>
+</resources>
