@@ -1,0 +1,5 @@
+D:\Projects\MVS\Practice\MP3\MP3.2\obj\Debug\MP3.2.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP3\MP3.2\obj\Debug\App.g.cs
+D:\Projects\MVS\Practice\MP3\MP3.2\obj\Debug\MP3.2_MarkupCompile.cache
+D:\Projects\MVS\Practice\MP3\MP3.2\obj\Debug\MainWindow.g.cs
+D:\Projects\MVS\Practice\MP3\MP3.2\obj\Debug\MP3.2_MarkupCompile.lref

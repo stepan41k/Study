@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MP9_Password", "MP9\MP9_Password.csproj", "{2992F265-8F52-410A-8003-073937E3AB44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MP9_PasswordTest", "MP9_PasswordTest\MP9_PasswordTest.csproj", "{636A4194-C492-4FA4-BEEE-353304AAD0EC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2992F265-8F52-410A-8003-073937E3AB44} = {2992F265-8F52-410A-8003-073937E3AB44}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2992F265-8F52-410A-8003-073937E3AB44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2992F265-8F52-410A-8003-073937E3AB44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2992F265-8F52-410A-8003-073937E3AB44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2992F265-8F52-410A-8003-073937E3AB44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{636A4194-C492-4FA4-BEEE-353304AAD0EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{636A4194-C492-4FA4-BEEE-353304AAD0EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{636A4194-C492-4FA4-BEEE-353304AAD0EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{636A4194-C492-4FA4-BEEE-353304AAD0EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01AAD18C-8C37-4873-9454-BA82EB8A5F40}
+	EndGlobalSection
+EndGlobal

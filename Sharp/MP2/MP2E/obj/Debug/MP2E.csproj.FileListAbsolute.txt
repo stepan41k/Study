@@ -1,0 +1,8 @@
+D:\Projects\MVS\Practice\MP2\MP2E\bin\Debug\MP2E.exe.config
+D:\Projects\MVS\Practice\MP2\MP2E\bin\Debug\MP2E.exe
+D:\Projects\MVS\Practice\MP2\MP2E\bin\Debug\MP2E.pdb
+D:\Projects\MVS\Practice\MP2\MP2E\obj\Debug\MP2E.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP2\MP2E\obj\Debug\MP2E.csproj.ResolveComReference.cache
+D:\Projects\MVS\Practice\MP2\MP2E\obj\Debug\MP2E.csproj.CoreCompileInputs.cache
+D:\Projects\MVS\Practice\MP2\MP2E\obj\Debug\MP2E.exe
+D:\Projects\MVS\Practice\MP2\MP2E\obj\Debug\MP2E.pdb

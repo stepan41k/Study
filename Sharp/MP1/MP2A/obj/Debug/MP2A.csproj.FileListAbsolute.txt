@@ -1,0 +1,10 @@
+D:\Projects\MVS\Practice\MP1\MP2A\bin\Debug\MP2A.exe.config
+D:\Projects\MVS\Practice\MP1\MP2A\bin\Debug\MP2A.exe
+D:\Projects\MVS\Practice\MP1\MP2A\bin\Debug\MP2A.pdb
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.Form1.resources
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.Properties.Resources.resources
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.csproj.GenerateResource.cache
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.csproj.CoreCompileInputs.cache
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.exe
+D:\Projects\MVS\Practice\MP1\MP2A\obj\Debug\MP2A.pdb

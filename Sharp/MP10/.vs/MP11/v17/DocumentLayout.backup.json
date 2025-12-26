@@ -1,0 +1,437 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\MVS\\Practice\\MP10\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\passwordchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\passwordchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\models\\studenttask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\models\\studenttask.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\pages\\authorization.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\pages\\authorization.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\pages\\authorization.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\pages\\authorization.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\pages\\registration.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\pages\\registration.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\\u0441hartpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\\u0441hartpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\mp11.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\mp11.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\editstudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\editstudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\addstudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\addstudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\\u0441hartpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\\u0441hartpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\studentsearch.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\studentsearch.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\deletestudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\deletestudentwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\mp11.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\mp11.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\addstudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\addstudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\studentsearch.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\studentsearch.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\editstudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\editstudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\deletestudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\deletestudentwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\pages\\registration.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\pages\\registration.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|d:\\projects\\mvs\\practice\\mp10\\mp10\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E4946474-5BBC-49F4-A902-D8D3F620C90C}|MP10\\MP11.csproj|solutionrelative:mp10\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 352,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PasswordChecker.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\PasswordChecker.cs",
+              "RelativeDocumentMoniker": "MP10\\PasswordChecker.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\PasswordChecker.cs",
+              "RelativeToolTip": "MP10\\PasswordChecker.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:19:53.361Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "StudentTask.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\StudentTask.cs",
+              "RelativeDocumentMoniker": "MP10\\Models\\StudentTask.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\StudentTask.cs",
+              "RelativeToolTip": "MP10\\Models\\StudentTask.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAVAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:01:27.376Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DatabaseContext.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DatabaseContext.cs",
+              "RelativeDocumentMoniker": "MP10\\DatabaseContext.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DatabaseContext.cs",
+              "RelativeToolTip": "MP10\\DatabaseContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:58:48.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Student.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\Student.cs",
+              "RelativeDocumentMoniker": "MP10\\Models\\Student.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\Student.cs",
+              "RelativeToolTip": "MP10\\Models\\Student.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:56:43.932Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\User.cs",
+              "RelativeDocumentMoniker": "MP10\\Models\\User.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Models\\User.cs",
+              "RelativeToolTip": "MP10\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:56:50.101Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Authorization.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Authorization.xaml",
+              "RelativeDocumentMoniker": "MP10\\Pages\\Authorization.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Authorization.xaml",
+              "RelativeToolTip": "MP10\\Pages\\Authorization.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:57:35.849Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Authorization.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Authorization.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\Pages\\Authorization.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Authorization.xaml.cs",
+              "RelativeToolTip": "MP10\\Pages\\Authorization.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:57:50.1Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Registration.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Registration.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\Pages\\Registration.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Registration.xaml.cs",
+              "RelativeToolTip": "MP10\\Pages\\Registration.xaml.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAACQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:58:11.262Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "\u0421hartPage.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\\u0421hartPage.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\\u0421hartPage.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\\u0421hartPage.xaml.cs",
+              "RelativeToolTip": "MP10\\\u0421hartPage.xaml.cs",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T19:20:59.707Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "MP11.csproj",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MP11.csproj",
+              "RelativeDocumentMoniker": "MP10\\MP11.csproj",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MP11.csproj",
+              "RelativeToolTip": "MP10\\MP11.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-15T19:14:59.663Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "MP10\\MainWindow.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MainWindow.xaml",
+              "RelativeToolTip": "MP10\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:59:21.677Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\MainWindow.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MainWindow.xaml.cs",
+              "RelativeToolTip": "MP10\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:59:26.971Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "EditStudentWindow.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\EditStudentWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\EditStudentWindow.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\EditStudentWindow.xaml.cs",
+              "RelativeToolTip": "MP10\\EditStudentWindow.xaml.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAAAAMAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:59:12.988Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "AddStudentWindow.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AddStudentWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\AddStudentWindow.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AddStudentWindow.xaml.cs",
+              "RelativeToolTip": "MP10\\AddStudentWindow.xaml.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAAMAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:58:26.123Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "\u0421hartPage.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\\u0421hartPage.xaml",
+              "RelativeDocumentMoniker": "MP10\\\u0421hartPage.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\\u0421hartPage.xaml",
+              "RelativeToolTip": "MP10\\\u0421hartPage.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T19:20:31.481Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\App.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\App.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\App.xaml.cs",
+              "RelativeToolTip": "MP10\\App.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:58:38.715Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "App.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\App.xaml",
+              "RelativeDocumentMoniker": "MP10\\App.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\App.xaml",
+              "RelativeToolTip": "MP10\\App.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:58:32.639Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "StudentSearch.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\StudentSearch.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\StudentSearch.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\StudentSearch.xaml.cs",
+              "RelativeToolTip": "MP10\\StudentSearch.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:59:42.966Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "DeleteStudentWindow.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DeleteStudentWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MP10\\DeleteStudentWindow.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DeleteStudentWindow.xaml.cs",
+              "RelativeToolTip": "MP10\\DeleteStudentWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:59:00.06Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "MP11",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MP11.csproj",
+              "RelativeDocumentMoniker": "MP10\\MP11.csproj",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\MP11.csproj",
+              "RelativeToolTip": "MP10\\MP11.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-15T19:25:36.572Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "AddStudentWindow.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AddStudentWindow.xaml",
+              "RelativeDocumentMoniker": "MP10\\AddStudentWindow.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AddStudentWindow.xaml",
+              "RelativeToolTip": "MP10\\AddStudentWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:58:18.161Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "StudentSearch.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\StudentSearch.xaml",
+              "RelativeDocumentMoniker": "MP10\\StudentSearch.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\StudentSearch.xaml",
+              "RelativeToolTip": "MP10\\StudentSearch.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:59:34.987Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "EditStudentWindow.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\EditStudentWindow.xaml",
+              "RelativeDocumentMoniker": "MP10\\EditStudentWindow.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\EditStudentWindow.xaml",
+              "RelativeToolTip": "MP10\\EditStudentWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:59:08.488Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "DeleteStudentWindow.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DeleteStudentWindow.xaml",
+              "RelativeDocumentMoniker": "MP10\\DeleteStudentWindow.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\DeleteStudentWindow.xaml",
+              "RelativeToolTip": "MP10\\DeleteStudentWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:58:54.365Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Registration.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Registration.xaml",
+              "RelativeDocumentMoniker": "MP10\\Pages\\Registration.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\Pages\\Registration.xaml",
+              "RelativeToolTip": "MP10\\Pages\\Registration.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-12-15T18:58:00.986Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "MP10\\AssemblyInfo.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP10\\MP10\\AssemblyInfo.cs",
+              "RelativeToolTip": "MP10\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:58:42.763Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 48,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

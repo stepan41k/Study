@@ -1,0 +1,90 @@
+﻿<Application x:Class="MP8.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MP8"
+             StartupUri="MainWindow.xaml">
+
+    <!-- Ресурсы, доступные всему приложению -->
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Основные цвета для нашей темы -->
+            <SolidColorBrush x:Key="PrimaryBackgroundColor" Color="#2D3436"/>
+            <SolidColorBrush x:Key="SecondaryBackgroundColor" Color="#3B4245"/>
+
+            <!-- Этот цвет остается темным для Label на белом фоне -->
+            <SolidColorBrush x:Key="PrimaryForegroundColor" Color="#212121"/>
+
+            <SolidColorBrush x:Key="AccentColorBrush" Color="#5A8B7D"/>
+            <SolidColorBrush x:Key="AccentMouseOverBrush" Color="#80B8A9"/>
+            <SolidColorBrush x:Key="TextBoxBackgroundBrush" Color="#4A5255"/>
+            <SolidColorBrush x:Key="BorderColorBrush" Color="#6A7275"/>
+
+            <!-- Стиль для всех окон в приложении -->
+            <Style TargetType="Window">
+                <Setter Property="Background" Value="{StaticResource PrimaryBackgroundColor}"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryForegroundColor}"/>
+            </Style>
+
+            <!-- Стиль для всех текстовых меток -->
+            <Style TargetType="Label">
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryForegroundColor}"/>
+            </Style>
+
+            <!-- Стиль для всех текстовых полей -->
+            <Style TargetType="TextBox">
+                <Setter Property="Background" Value="{StaticResource TextBoxBackgroundBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <!-- Внутри темного поля текст должен быть светлым -->
+                <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="5,3"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+
+            <!-- Стиль для всех кнопок -->
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource AccentColorBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Padding" Value="12,6"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="3">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource AccentMouseOverBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Стили для таблицы DataGrid -->
+            <Style TargetType="DataGrid">
+                <Setter Property="Background" Value="{StaticResource SecondaryBackgroundColor}"/>
+                <!-- ВОТ ИЗМЕНЕНИЕ: Явно указываем, что текст в ячейках должен быть белым -->
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderColorBrush}"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderColorBrush}"/>
+                <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BorderColorBrush}"/>
+                <Setter Property="RowBackground" Value="{StaticResource SecondaryBackgroundColor}" />
+                <Setter Property="AlternatingRowBackground" Value="{StaticResource PrimaryBackgroundColor}" />
+            </Style>
+
+            <!-- Стиль для заголовков столбцов в DataGrid -->
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="{StaticResource AccentColorBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Padding" Value="5"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

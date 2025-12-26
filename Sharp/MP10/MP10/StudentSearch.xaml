@@ -1,0 +1,59 @@
+﻿<Page x:Class="MP11.StudentSearch"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:MP11.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="Поиск студентов"
+      
+      Background="{StaticResource PrimaryBackgroundColor}">
+    <!-- ^ Установили темный фон для всей страницы -->
+
+    <!-- TextElement.Foreground="White" делает весь текст внутри белым -->
+    <Grid Margin="10" TextElement.Foreground="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,10">
+            <!-- Верхняя строка -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Выберите группу:" VerticalAlignment="Center" Width="120" TextAlignment="Right" Margin="0,0,10,0"/>
+
+                <ComboBox x:Name="ComboGroup" Width="200" 
+                          SelectionChanged="ComboGroup_SelectionChanged"/>
+
+                <!-- Чекбокс тоже станет белым благодаря настройке в Grid -->
+                <CheckBox x:Name="CheckFilterGroup" Content="Показывать только выбранные группы" 
+                          VerticalAlignment="Center" Margin="15,0,0,0"
+                          Checked="CheckFilterGroup_Checked"
+                          Unchecked="CheckFilterGroup_Unchecked"
+                          Foreground="White"/>
+            </StackPanel>
+
+            <!-- Нижняя строка -->
+            <StackPanel Orientation="Horizontal" Margin="0,5">
+                <TextBlock Text="Введите фамилию:" VerticalAlignment="Center" Width="120" TextAlignment="Right" Margin="0,0,10,0"/>
+
+                <TextBox x:Name="TBoxSearch" Width="200" 
+                         TextChanged="TBoxSearch_TextChanged"/>
+
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Таблица -->
+        <DataGrid x:Name="StudentsDataGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}"/>
+                <DataGridTextColumn Header="Фамилия" Binding="{Binding LastName}" Width="*"/>
+                <DataGridTextColumn Header="Имя" Binding="{Binding FirstName}" Width="*"/>
+                <DataGridTextColumn Header="Группа" Binding="{Binding Group}"/>
+                <DataGridTextColumn Header="Роль" Binding="{Binding Role}" Width="*"/>
+                <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</Page>

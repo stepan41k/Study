@@ -1,0 +1,10 @@
+D:\Projects\MVS\Practice\MP2\MP2\bin\Debug\MP2.exe.config
+D:\Projects\MVS\Practice\MP2\MP2\bin\Debug\MP2.exe
+D:\Projects\MVS\Practice\MP2\MP2\bin\Debug\MP2.pdb
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.Form1.resources
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.Properties.Resources.resources
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.csproj.GenerateResource.cache
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.csproj.CoreCompileInputs.cache
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.exe
+D:\Projects\MVS\Practice\MP2\MP2\obj\Debug\MP2.pdb

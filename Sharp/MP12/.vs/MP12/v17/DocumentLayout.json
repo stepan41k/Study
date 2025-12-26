@@ -1,0 +1,187 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\MVS\\Practice\\MP12\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12_client\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|solutionrelative:mp12_client\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|solutionrelative:mp12\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12_client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|solutionrelative:mp12_client\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\controllers\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|solutionrelative:mp12\\controllers\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|solutionrelative:mp12\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12.csproj|solutionrelative:mp12\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12_Server.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12_Server.csproj|solutionrelative:mp12\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12_client\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{5E3738FE-7207-4EED-992C-49167C2ED081}|MP12_Client\\MP12_Client.csproj|solutionrelative:mp12_client\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12_Server.csproj|d:\\projects\\mvs\\practice\\mp12\\mp12\\mp12_server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{21D80A17-206F-44E1-AFB6-A468F224A69D}|MP12\\MP12_Server.csproj|solutionrelative:mp12\\mp12_server.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 352,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "MP12\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Properties\\launchSettings.json",
+              "RelativeToolTip": "MP12\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-12-15T21:51:18.081Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "packages.config",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\packages.config",
+              "RelativeDocumentMoniker": "MP12_Client\\packages.config",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\packages.config",
+              "RelativeToolTip": "MP12_Client\\packages.config",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAYAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-12-15T21:50:14.422Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Student.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\Student.cs",
+              "RelativeDocumentMoniker": "MP12_Client\\Student.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\Student.cs",
+              "RelativeToolTip": "MP12_Client\\Student.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:35:51.749Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\Program.cs",
+              "RelativeDocumentMoniker": "MP12_Client\\Program.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12_Client\\Program.cs",
+              "RelativeToolTip": "MP12_Client\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIkAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:34:41.896Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StudentController.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Controllers\\StudentController.cs",
+              "RelativeDocumentMoniker": "MP12\\Controllers\\StudentController.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Controllers\\StudentController.cs",
+              "RelativeToolTip": "MP12\\Controllers\\StudentController.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABwAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:31:47.919Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DatabaseContext.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\DatabaseContext.cs",
+              "RelativeDocumentMoniker": "MP12\\DatabaseContext.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\DatabaseContext.cs",
+              "RelativeToolTip": "MP12\\DatabaseContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAACQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:30:35.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Program.cs",
+              "RelativeDocumentMoniker": "MP12\\Program.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Program.cs",
+              "RelativeToolTip": "MP12\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:31:12.493Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "MP12_Server.csproj",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\MP12_Server.csproj",
+              "RelativeDocumentMoniker": "MP12\\MP12_Server.csproj",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\MP12_Server.csproj",
+              "RelativeToolTip": "MP12\\MP12_Server.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-12-15T21:30:23.937Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Student.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Models\\Student.cs",
+              "RelativeDocumentMoniker": "MP12\\Models\\Student.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP12\\MP12\\Models\\Student.cs",
+              "RelativeToolTip": "MP12\\Models\\Student.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T21:29:21.313Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 48,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\MVS\\Practice\\MP6_2\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\models\\student.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\pages\\authorization.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\pages\\authorization.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\pages\\registration.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\pages\\registration.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\databasecontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\pages\\authorization.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\pages\\authorization.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|d:\\projects\\mvs\\practice\\mp6_2\\mp6_2\\pages\\registration.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{7C6A3434-2935-49CC-B0EE-E8D532B14E6F}|MP6_2\\MP6_2.csproj|solutionrelative:mp6_2\\pages\\registration.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 352,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Models\\User.cs",
+              "RelativeDocumentMoniker": "MP6_2\\Models\\User.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Models\\User.cs",
+              "RelativeToolTip": "MP6_2\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:38:25.489Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Student.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Models\\Student.cs",
+              "RelativeDocumentMoniker": "MP6_2\\Models\\Student.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Models\\Student.cs",
+              "RelativeToolTip": "MP6_2\\Models\\Student.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:38:22.542Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\App.xaml.cs",
+              "RelativeDocumentMoniker": "MP6_2\\App.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\App.xaml.cs",
+              "RelativeToolTip": "MP6_2\\App.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:37:57.807Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AssemblyInfo.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "MP6_2\\AssemblyInfo.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\AssemblyInfo.cs",
+              "RelativeToolTip": "MP6_2\\AssemblyInfo.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:37:46.61Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "DatabaseContext.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\DatabaseContext.cs",
+              "RelativeDocumentMoniker": "MP6_2\\DatabaseContext.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\DatabaseContext.cs",
+              "RelativeToolTip": "MP6_2\\DatabaseContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAACLAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:35:02.932Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "MP6_2\\MainWindow.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\MainWindow.xaml.cs",
+              "RelativeToolTip": "MP6_2\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:34:53.831Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Authorization.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Authorization.xaml.cs",
+              "RelativeDocumentMoniker": "MP6_2\\Pages\\Authorization.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Authorization.xaml.cs",
+              "RelativeToolTip": "MP6_2\\Pages\\Authorization.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:33:03.881Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Authorization.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Authorization.xaml",
+              "RelativeDocumentMoniker": "MP6_2\\Pages\\Authorization.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Authorization.xaml",
+              "RelativeToolTip": "MP6_2\\Pages\\Authorization.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-11-17T22:32:53.424Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Registration.xaml",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Registration.xaml",
+              "RelativeDocumentMoniker": "MP6_2\\Pages\\Registration.xaml",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Registration.xaml",
+              "RelativeToolTip": "MP6_2\\Pages\\Registration.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2025-11-17T22:29:40.256Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Registration.xaml.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Registration.xaml.cs",
+              "RelativeDocumentMoniker": "MP6_2\\Pages\\Registration.xaml.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP6_2\\MP6_2\\Pages\\Registration.xaml.cs",
+              "RelativeToolTip": "MP6_2\\Pages\\Registration.xaml.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T22:29:07.234Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 48,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

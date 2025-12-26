@@ -1,0 +1,16 @@
+D:\Projects\MVS\Practice\MP3\MP33\bin\Debug\MP33.exe.config
+D:\Projects\MVS\Practice\MP3\MP33\bin\Debug\MP33.exe
+D:\Projects\MVS\Practice\MP3\MP33\bin\Debug\MP33.pdb
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MainWindow.g.cs
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\App.g.cs
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\GeneratedInternalTypeHelper.g.cs
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33_MarkupCompile.cache
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33_MarkupCompile.lref
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MainWindow.baml
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.g.resources
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.Properties.Resources.resources
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.csproj.GenerateResource.cache
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.csproj.CoreCompileInputs.cache
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.exe
+D:\Projects\MVS\Practice\MP3\MP33\obj\Debug\MP33.pdb

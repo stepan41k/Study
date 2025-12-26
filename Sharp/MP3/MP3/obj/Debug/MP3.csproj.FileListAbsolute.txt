@@ -1,0 +1,15 @@
+D:\Projects\MVS\Practice\MP3\MP3\bin\Debug\MP3.exe.config
+D:\Projects\MVS\Practice\MP3\MP3\bin\Debug\MP3.exe
+D:\Projects\MVS\Practice\MP3\MP3\bin\Debug\MP3.pdb
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.csproj.AssemblyReference.cache
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MainWindow.g.cs
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\App.g.cs
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3_MarkupCompile.cache
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3_MarkupCompile.lref
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MainWindow.baml
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.g.resources
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.Properties.Resources.resources
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.csproj.GenerateResource.cache
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.csproj.CoreCompileInputs.cache
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.exe
+D:\Projects\MVS\Practice\MP3\MP3\obj\Debug\MP3.pdb

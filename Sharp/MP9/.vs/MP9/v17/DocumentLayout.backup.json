@@ -1,0 +1,81 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\MVS\\Practice\\MP9\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2992F265-8F52-410A-8003-073937E3AB44}|MP9\\MP9_Password.csproj|d:\\projects\\mvs\\practice\\mp9\\mp9\\passwordchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2992F265-8F52-410A-8003-073937E3AB44}|MP9\\MP9_Password.csproj|solutionrelative:mp9\\passwordchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{636A4194-C492-4FA4-BEEE-353304AAD0EC}|MP9_PasswordTest\\MP9_PasswordTest.csproj|d:\\projects\\mvs\\practice\\mp9\\mp9_passwordtest\\passwordcheckertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{636A4194-C492-4FA4-BEEE-353304AAD0EC}|MP9_PasswordTest\\MP9_PasswordTest.csproj|solutionrelative:mp9_passwordtest\\passwordcheckertests.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{636A4194-C492-4FA4-BEEE-353304AAD0EC}|MP9_PasswordTest\\MP9_PasswordTest.csproj|d:\\projects\\mvs\\practice\\mp9\\mp9_passwordtest\\unittest1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{636A4194-C492-4FA4-BEEE-353304AAD0EC}|MP9_PasswordTest\\MP9_PasswordTest.csproj|solutionrelative:mp9_passwordtest\\unittest1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 352,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "UnitTest1.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP9\\MP9_PasswordTest\\UnitTest1.cs",
+              "RelativeDocumentMoniker": "MP9_PasswordTest\\UnitTest1.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP9\\MP9_PasswordTest\\UnitTest1.cs",
+              "RelativeToolTip": "MP9_PasswordTest\\UnitTest1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:10:42.715Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PasswordChecker.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP9\\MP9\\PasswordChecker.cs",
+              "RelativeDocumentMoniker": "MP9\\PasswordChecker.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP9\\MP9\\PasswordChecker.cs",
+              "RelativeToolTip": "MP9\\PasswordChecker.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T18:09:07.781Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PasswordCheckerTests.cs",
+              "DocumentMoniker": "D:\\Projects\\MVS\\Practice\\MP9\\MP9_PasswordTest\\PasswordCheckerTests.cs",
+              "RelativeDocumentMoniker": "MP9_PasswordTest\\PasswordCheckerTests.cs",
+              "ToolTip": "D:\\Projects\\MVS\\Practice\\MP9\\MP9_PasswordTest\\PasswordCheckerTests.cs",
+              "RelativeToolTip": "MP9_PasswordTest\\PasswordCheckerTests.cs",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAmwKQAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-15T17:59:47.435Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 48,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

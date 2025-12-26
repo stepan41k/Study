@@ -1,0 +1,45 @@
+﻿<Page x:Class="MP8.Pages.Registration"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:MP8.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="500"
+      Title="Регистрация">
+    <Grid>
+        <Viewbox Margin="25">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Label Content="Регистрация" Grid.ColumnSpan="2" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"/>
+
+                <Label Content="ФИО:" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <TextBox x:Name="FullNameTextBox" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" MinWidth="200" Margin="5"/>
+
+                <Label Content="Имя пользователя:" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <TextBox x:Name="UsernameTextBox" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" MinWidth="200" Margin="5"/>
+
+                <Label Content="Пароль:" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <PasswordBox x:Name="PasswordBox" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center" MinWidth="200" Margin="5"/>
+
+                <Label Content="Подтвердите пароль:" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <PasswordBox x:Name="ConfirmPasswordBox" Grid.Row="4" Grid.Column="1" VerticalAlignment="Center" MinWidth="200" Margin="5"/>
+
+                <Button x:Name="BtnGoToAuthorization" Content="Авторизация" Grid.Row="5" Grid.Column="0" Margin="5" Padding="6 0" HorizontalAlignment="Center" Click="BtnGoToAuthorization_Click"/>
+                <Button x:Name="BtnRegister" Content="Зарегистрироваться" Grid.Row="5" Grid.Column="1" Margin="5" Padding="6 0" HorizontalAlignment="Center" Click="BtnRegister_Click"/>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</Page>

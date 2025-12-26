@@ -1,0 +1,44 @@
+﻿<Window x:Class="WpfApp_MenuToolbarStatusBar.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp_MenuToolbarStatusBar"
+        mc:Ignorable="d"
+        Title="Mainor App 4"
+        Height="450" Width="800">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Панель инструментов" Name="FileMenu" Click="FileMenu_Click">
+                <MenuItem Header="_Изменить цвет фона" Click="ChangeBackgroundColor_Click" Name="ChangeColorMenuItem" />
+                <MenuItem Header="_О программе" Click="About_Click" Name="AboutMenuItem" />
+                <Separator/>
+                <MenuItem Header="_Выход" Click="Exit_Click" Name="ExitMenuItem" />
+            </MenuItem>
+        </Menu>
+
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar Header="Основные команды">
+                <Button ToolTip="Изменить цвет фона окна" Click="ChangeBackgroundColor_Click" Name="ChangeColorToolBarButton">
+                    <Image Source="pack://application:,,,/MP34;component/Images/color_icon.png" Width="24" Height="24"/>
+                </Button>
+                <Button ToolTip="Показать информацию о программе" Click="About_Click" Name="AboutToolBarButton">
+                    <Image Source="pack://application:,,,/MP34;component/Images/info_icon.png" Width="24" Height="24"/>
+                </Button>
+                <Button ToolTip="Закрыть приложение" Click="Exit_Click" Name="ExitToolBarButton">
+                    <Image Source="pack://application:,,,/MP34;component/Images/exit_icon.png" Width="24" Height="24"/>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Name="StatusBarText" Text="Готово"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid Name="MainContentGrid" Background="LightGray">
+            <TextBlock Text="Основное содержимое окна" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontWeight="Bold"/>
+        </Grid>
+    </DockPanel>
+</Window>

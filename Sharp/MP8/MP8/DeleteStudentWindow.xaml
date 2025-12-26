@@ -1,0 +1,34 @@
+﻿<Window x:Class="MP8.DeleteStudentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Удалить студента" Height="350" Width="400"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Все поля IsReadOnly="True", так как это окно только для подтверждения -->
+        <Label Grid.Row="0" Grid.Column="0" Content="Имя:" VerticalAlignment="Center"/>
+        <TextBox x:Name="FirstNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5" IsReadOnly="True"/>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Фамилия:" VerticalAlignment="Center"/>
+        <TextBox x:Name="LastNameTextBox" Grid.Row="1" Grid.Column="1" Margin="5" IsReadOnly="True"/>
+
+        <Label Grid.Row="2" Grid.Column="0" Content="Группа:" VerticalAlignment="Center"/>
+        <TextBox x:Name="GroupTextBox" Grid.Row="2" Grid.Column="1" Margin="5" IsReadOnly="True"/>
+
+        <Button Grid.Row="6" Grid.ColumnSpan="2" Content="Удалить" Width="120" Height="30"
+                HorizontalAlignment="Center" Click="DeleteButton_Click"/>
+    </Grid>
+</Window>
