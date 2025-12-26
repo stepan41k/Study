@@ -11,7 +11,6 @@ import (
 	"unicode"
 )
 
-
 var alphabetRunes = []rune("АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
 var alphaMap map[rune]int
 
@@ -22,14 +21,12 @@ func init() {
 	}
 }
 
-
 type TextAnalysis struct {
 	Name      string
 	TotalLen  float64
 	CharProbs map[rune]float64
 	Entropy   float64
 }
-
 
 func analyzeText(name string, text string) *TextAnalysis {
 	clean := cleanText(text)
@@ -81,7 +78,7 @@ func saveHistogramToCSV(ta *TextAnalysis) error {
 	safeName = strings.ReplaceAll(safeName, ")", "")
 	safeName = strings.ReplaceAll(safeName, "=", "")
 	safeName = strings.ToLower(safeName)
-	
+
 	filename := fmt.Sprintf("hist_%s.csv", safeName)
 
 	file, err := os.Create(filename)
@@ -103,7 +100,7 @@ func saveHistogramToCSV(ta *TextAnalysis) error {
 		prob := ta.CharProbs[r] * 100 // переводим в проценты
 		// Форматируем число с точностью до 4 знаков
 		sProb := strconv.FormatFloat(prob, 'f', 4, 64)
-		
+
 		if err := writer.Write([]string{string(r), sProb}); err != nil {
 			return err
 		}
@@ -175,7 +172,8 @@ func encryptPlayfair(text string, key string) string {
 		if i+1 < len(runes) {
 			r2 = runes[i+1]
 			if r1 == r2 {
-				r2 = 'Ъ'; i--
+				r2 = 'Ъ'
+				i--
 			}
 		} else {
 			r2 = 'Ъ'
@@ -213,17 +211,16 @@ func encryptAdditive(text string, kg KeyGen) string {
 // --- ГЕНЕРАТОР ПСП (LFSR) ---
 
 type LFSR struct {
-	State  [5]int    // Вектор состояния (столбец)
-	Matrix [5][5]int // Переходная матрица 5x5
+	State  [5]int
+	Matrix [5][5]int
 }
 
 func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
 	lfsr := &LFSR{}
 
-	// Защита от нулевого начального состояния (для LFSR состояние "все нули" часто стационарно)
 	if (seedVal & 0x1F) == 0 {
 		seedVal = 1
-		fmt.Println("Warning: Seed low bits were 0, forced to 1 to avoid stuck state.")
+		fmt.Println("Warning: Seed low bits were 0")
 	}
 
 	for i := 0; i < 5; i++ {
@@ -234,6 +231,8 @@ func NewLFSR(polyCoeffs [5]int, seedVal int) *LFSR {
 	for r := 0; r < 4; r++ {
 		lfsr.Matrix[r][r+1] = 1
 	}
+
+	//Заполняем матрицу для операции сдвига.
 	for i := 0; i < 5; i++ {
 		lfsr.Matrix[4][i] = polyCoeffs[4-i]
 	}
@@ -269,7 +268,6 @@ func createLfsrKeyGen(polyCoeffs [5]int, seed int) KeyGen {
 	}
 }
 
-
 func main() {
 	// 0. Подготовка данных
 	const sourceFilename = "source.txt"
@@ -303,15 +301,15 @@ func main() {
 	// --- 2.2 Поговорка ---
 	proverb := "Пуст мешок стоять не будет"
 	proverbClean := []rune(cleanText(proverb))
-	cipher2_2 := encryptAdditive(fullText, func(i int) int { 
-		return alphaMap[proverbClean[i%len(proverbClean)]] 
+	cipher2_2 := encryptAdditive(fullText, func(i int) int {
+		return alphaMap[proverbClean[i%len(proverbClean)]]
 	})
 	saveToFile("cipher_proverb.txt", cipher2_2)
 	reports = append(reports, analyzeText("2.2 Гаммирование (Поговорка)", cipher2_2))
 
 	// --- 2.3 ПСП (LFSR) ---
 	poly := [5]int{0, 1, 0, 0, 1}
-	seed := int(time.Now().UnixNano()) 
+	seed := int(time.Now().UnixNano())
 	lfsrKeyGen := createLfsrKeyGen(poly, seed+1)
 	cipher2_3 := encryptAdditive(fullText, lfsrKeyGen)
 	saveToFile("cipher_lfsr.txt", cipher2_3)

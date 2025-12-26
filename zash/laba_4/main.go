@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"math" // --- ДОБАВЛЕНО: Для вычисления логарифма ---
 	"os"
 	"strings"
 )
@@ -181,6 +182,31 @@ func blocksToSymbols(blocks []uint16) []uint8 {
 	return symbols
 }
 
+// --- ДОБАВЛЕНО: Функция расчета энтропии Шеннона ---
+func calculateEntropy(symbols []uint8) float64 {
+	if len(symbols) == 0 {
+		return 0.0
+	}
+
+	counts := make(map[uint8]int)
+	for _, s := range symbols {
+		counts[s]++
+	}
+
+	total := float64(len(symbols))
+	entropy := 0.0
+
+	for _, count := range counts {
+		p := float64(count) / total
+		if p > 0 {
+			entropy -= p * math.Log2(p)
+		}
+	}
+	return entropy
+}
+
+// ----------------------------------------------------
+
 // printHistogram выводит гистограмму в консоль
 func printHistogram(title string, symbols []uint8) {
 	fmt.Printf("\n--- %s ---\n", title)
@@ -240,12 +266,10 @@ func saveHistogramToCSV(filename string, symbols []uint8) error {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	// --- ДОБАВЛЕНО: Запись заголовков столбцов ---
 	headers := []string{"Символ", "Вероятность"}
 	if err := writer.Write(headers); err != nil {
 		return err
 	}
-	// ---------------------------------------------
 
 	counts := make(map[uint8]int)
 	for _, s := range symbols {
@@ -276,7 +300,7 @@ func saveHistogramToCSV(filename string, symbols []uint8) error {
 		}
 	}
 
-	fmt.Printf("Файл сохранен: %s\n", filename)
+	// Убрал вывод "Файл сохранен" чтобы не засорять консоль, так как файлов много
 	return nil
 }
 
@@ -354,13 +378,15 @@ func main() {
 
 	// 0. Гистограмма исходного текста
 	sourceSymbols := blocksToSymbols(allBlocks)
-	// --- ДОБАВЛЕНО: Сохранение частот символов исходного текста в CSV ---
 	saveHistogramToCSV("histogram_source.csv", sourceSymbols)
-	// -------------------------------------------------------------------
 	printHistogram("ИСХОДНЫЙ ТЕКСТ", sourceSymbols)
 
+	// --- ДОБАВЛЕНО: Энтропия исходного текста ---
+	fmt.Printf(">> Энтропия исходного текста: %.5f бит\n", calculateEntropy(sourceSymbols))
+	// --------------------------------------------
+
 	// --- ЗАДАНИЕ 1: Сохранение по раундам ---
-	fmt.Println("--- ЗАДАНИЕ 1 ---")
+	fmt.Println("\n--- ЗАДАНИЕ 1: ПО РАУНДАМ ---")
 	roundData := EncryptAndRecordRounds(fc, allBlocks)
 
 	for i := 1; i <= 8; i++ {
@@ -368,13 +394,18 @@ func main() {
 		csvFilename := fmt.Sprintf("histogram_round_%d.csv", i)
 		saveHistogramToCSV(csvFilename, symbols)
 
+		// --- ДОБАВЛЕНО: Вывод энтропии для каждого раунда ---
+		ent := calculateEntropy(symbols)
+		fmt.Printf("Раунд %d: энтропия = %.5f бит\n", i, ent)
+		// ----------------------------------------------------
+
 		if i == 1 || i == 8 {
-			printHistogram(fmt.Sprintf("РАУНД %d", i), symbols)
+			printHistogram(fmt.Sprintf("РАУНД %d (Гистограмма)", i), symbols)
 		}
 	}
 
 	// --- ЗАДАНИЕ 2: Режимы ---
-	fmt.Println("\n--- ЗАДАНИЕ 2 ---")
+	fmt.Println("\n--- ЗАДАНИЕ 2: РЕЖИМЫ ---")
 	const iv uint16 = 819
 
 	// ECB
@@ -382,24 +413,32 @@ func main() {
 	ecbSymbols := blocksToSymbols(ecbCipher)
 	saveHistogramToCSV("histogram_ecb.csv", ecbSymbols)
 	printHistogram("РЕЖИМ ECB", ecbSymbols)
+	// --- ДОБАВЛЕНО: Энтропия ---
+	fmt.Printf(">> Энтропия ECB: %.5f бит\n", calculateEntropy(ecbSymbols))
 
 	// CBC
 	cbcCipher := encryptCBC(fc, allBlocks, iv)
 	cbcSymbols := blocksToSymbols(cbcCipher)
 	saveHistogramToCSV("histogram_cbc.csv", cbcSymbols)
 	printHistogram("РЕЖИМ CBC", cbcSymbols)
+	// --- ДОБАВЛЕНО: Энтропия ---
+	fmt.Printf(">> Энтропия CBC: %.5f бит\n", calculateEntropy(cbcSymbols))
 
 	// CFB
 	cfbCipher := encryptCFB(fc, allBlocks, iv)
 	cfbSymbols := blocksToSymbols(cfbCipher)
 	saveHistogramToCSV("histogram_cfb.csv", cfbSymbols)
 	printHistogram("РЕЖИМ CFB", cfbSymbols)
+	// --- ДОБАВЛЕНО: Энтропия ---
+	fmt.Printf(">> Энтропия CFB: %.5f бит\n", calculateEntropy(cfbSymbols))
 
 	// OFB
 	ofbCipher := encryptOFB(fc, allBlocks, iv)
 	ofbSymbols := blocksToSymbols(ofbCipher)
 	saveHistogramToCSV("histogram_ofb.csv", ofbSymbols)
 	printHistogram("РЕЖИМ OFB", ofbSymbols)
+	// --- ДОБАВЛЕНО: Энтропия ---
+	fmt.Printf(">> Энтропия OFB: %.5f бит\n", calculateEntropy(ofbSymbols))
 
 	fmt.Println("\nВсе файлы успешно созданы.")
 }
