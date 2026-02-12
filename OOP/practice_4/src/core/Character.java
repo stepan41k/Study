@@ -1,4 +1,4 @@
-package game.core;
+package src.core;
 
 public class Character {
 
