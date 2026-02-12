@@ -10,20 +10,20 @@ public class Library<T> {
 
     public void addItem(T item) {
         items.add(item);
-        System.out.println("Элемент добавлен в библиотеку.");
+        System.out.println("Элемент добавлен в библиотеку");
     }
 
     public void removeItem(T item) {
         if (items.remove(item)) {
-            System.out.println("Элемент удалён из библиотеки.");
+            System.out.println("Элемент удалён из библиотеки");
         } else {
-            System.out.println("Элемент не найден в библиотеке.");
+            System.out.println("Элемент не найден в библиотеке");
         }
     }
 
     public void showAllItems() {
         if (items.isEmpty()) {
-            System.out.println("Библиотека пуста.");
+            System.out.println("Библиотека пуста");
             return;
         }
         System.out.println("Список элементов библиотеки");

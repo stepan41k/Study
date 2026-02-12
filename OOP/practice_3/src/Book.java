@@ -16,6 +16,6 @@ public class Book extends LibraryItem {
 
     @Override
     public void showInfo() {
-        System.out.println("[Книга] Название: \"" + getTitle() + "\", Автор: " + getAuthor() + ", Страниц: " + pages);
+        System.out.println("[Книга] Название книги: \"" + getTitle() + "\", Автор книги: " + getAuthor() + ", Страниц: " + pages);
     }
 }

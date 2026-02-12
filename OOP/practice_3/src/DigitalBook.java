@@ -16,7 +16,7 @@ public class DigitalBook extends Book {
 
     @Override
     public void showInfo() {
-        System.out.println("[Цифровая книга] Название: \"" + getTitle() + "\", Автор: " + getAuthor()
+        System.out.println("[Электронная книга] Название: \"" + getTitle() + "\", Автор: " + getAuthor()
                 + ", Страниц: " + getPages() + ", Размер файла: " + fileSize + " MB");
     }
 }

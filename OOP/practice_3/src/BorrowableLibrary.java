@@ -23,37 +23,37 @@ public class BorrowableLibrary<T> extends Library<T> {
 
     public void borrowItem(T item) {
         if (!items.contains(item)) {
-            System.out.println("Элемент не найден в библиотеке.");
+            System.out.println("Элемент не найден в библиотеке");
             return;
         }
         if (borrowedItems.getOrDefault(item, false)) {
-            System.out.println("Элемент уже взят в аренду.");
+            System.out.println("Элемент уже взят в аренду");
         } else {
             borrowedItems.put(item, true);
-            System.out.println("Элемент успешно взят в аренду.");
+            System.out.println("Элемент успешно взят в аренду");
         }
     }
 
     public void returnItem(T item) {
         if (!items.contains(item)) {
-            System.out.println("Элемент не найден в библиотеке.");
+            System.out.println("Элемент не найден в библиотеке");
             return;
         }
         if (!borrowedItems.getOrDefault(item, false)) {
-            System.out.println("Элемент не был в аренде.");
+            System.out.println("Элемент не был в аренде");
         } else {
             borrowedItems.put(item, false);
-            System.out.println("Элемент успешно возвращён.");
+            System.out.println("Элемент успешно возвращён");
         }
     }
 
     @Override
     public void showAllItems() {
         if (items.isEmpty()) {
-            System.out.println("Библиотека пуста.");
+            System.out.println("Библиотека пуста");
             return;
         }
-        System.out.println("Список элементов (с статусом аренды)");
+        System.out.println("Список элементов");
         for (T item : items) {
             if (item == null) {
                 System.out.println("null");
@@ -63,7 +63,7 @@ public class BorrowableLibrary<T> extends Library<T> {
                 System.out.println(item.toString());
             }
             boolean isBorrowed = borrowedItems.getOrDefault(item, false);
-            System.out.println("   Статус: " + (isBorrowed ? "⛔ В аренде" : "✅ Доступен"));
+            System.out.println("Статус: " + (isBorrowed ? "В аренде" : "Доступен"));
         }
         System.out.println("------------------------");
     }
