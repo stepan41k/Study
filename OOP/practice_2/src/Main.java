@@ -4,8 +4,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        Car car = new Car("Tesla Model 3", 120.0);
-        Bicycle bicycle = new Bicycle("Giant TCR", 25.0);
+        Car car = new Car("Tesla", 120.0);
+        Bicycle bicycle = new Bicycle("BMX", 25.0);
 
         Vehicle train = new Vehicle() {
             @Override

@@ -5,11 +5,11 @@ public class Main {
         Book book2 = new Book("Преступление и наказание", "Фёдор Достоевский", 671);
         Magazine mag1 = new Magazine("National Geographic", "Редакция NG", 256);
         Magazine mag2 = new Magazine("Forbes", "Редакция Forbes", 102);
-        DigitalBook dBook1 = new DigitalBook("Java. Полное руководство", "Герберт Шилдт", 1486, 45.7);
-        DigitalBook dBook2 = new DigitalBook("Clean Code", "Роберт Мартин", 464, 12.3);
+        DigitalBook dBook1 = new DigitalBook("ВЫсоконагруженные системы и сервисы", "Мартин Клепман", 1486, 45.7);
+        DigitalBook dBook2 = new DigitalBook("Чистый код", "Роберт Мартин", 464, 12.3);
 
         //2
-        System.out.println("ПОЛИМОРФИЗМ: вызов showInfo()");
+        System.out.println("Полиморфизм: вызов showInfo()");
         LibraryItem[] allItems = {book1, book2, mag1, mag2, dBook1, dBook2};
 
         //3
@@ -29,7 +29,7 @@ public class Main {
         System.out.println();
 
         //4
-        System.out.println("БИБЛИОТЕКА С АРЕНДОЙ (только книги)");
+        System.out.println("Библиотека с арендой (только книги)");
         BorrowableLibrary<Book> borrowableLibrary = new BorrowableLibrary<>();
         borrowableLibrary.addItem(book1);
         borrowableLibrary.addItem(book2);
