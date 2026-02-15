@@ -2,19 +2,16 @@ package src.core;
 
 public class Character {
 
-    // === Поля экземпляра ===
     private String name;
     private int health;
     private int damage;
     protected int level;
-    boolean alive; // package-private
+    boolean alive;
 
-    // === Статические поля ===
     public static final String GAME_NAME = "Arena";
     private static int createdCharacters = 0;
-    static int coreEvents = 0; // package-private
+    static int coreEvents = 0;
 
-    // === Конструктор ===
     public Character(String name, int health, int damage, int level) {
         this.name = name;
         this.health = health;
@@ -23,8 +20,6 @@ public class Character {
         this.alive = true;
         createdCharacters++;
     }
-
-    // === Публичные методы (API для приложения) ===
 
     public String getName() {
         return name;
@@ -63,8 +58,6 @@ public class Character {
         return createdCharacters;
     }
 
-    // === Private методы (скрытая логика) ===
-
     private void die() {
         alive = false;
         health = 0;
@@ -74,8 +67,6 @@ public class Character {
     private void logPrivate(String msg) {
         System.out.println("[LOG] " + msg);
     }
-
-    // === Package-private методы (для ядра игры) ===
 
     void reviveForCore(int hp) {
         alive = true;
@@ -87,8 +78,6 @@ public class Character {
         this.damage = newDamage;
         logPrivate(name + " damage set to " + newDamage + " by core.");
     }
-
-    // === Protected методы (для наследников) ===
 
     protected void addLevel(int delta) {
         if (delta > 0) {
@@ -104,7 +93,6 @@ public class Character {
         }
     }
 
-    // === toString для удобного вывода ===
     @Override
     public String toString() {
         return "Character{name='" + name + "', health=" + health +
