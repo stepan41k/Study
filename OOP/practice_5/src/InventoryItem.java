@@ -1,11 +1,8 @@
 public class InventoryItem {
 
-    private final Item item;   // агрегация: Item существует независимо
+    private final Item item;
     private int quantity;
 
-    /**
-     * Пакетный доступ — создавать InventoryItem может только Inventory.
-     */
     InventoryItem(Item item, int quantity) {
         if (item == null) {
             throw new IllegalArgumentException("Item не может быть null.");
@@ -25,9 +22,6 @@ public class InventoryItem {
         return quantity;
     }
 
-    /**
-     * Пакетный доступ — менять количество может только Inventory.
-     */
     void setQuantity(int quantity) {
         if (quantity < 1) {
             throw new IllegalArgumentException("Количество должно быть >= 1.");
@@ -35,9 +29,6 @@ public class InventoryItem {
         this.quantity = quantity;
     }
 
-    /**
-     * Суммарная ценность = baseValue * quantity.
-     */
     public double getTotalValue() {
         return item.getBaseValue() * quantity;
     }

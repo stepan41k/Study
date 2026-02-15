@@ -10,13 +10,12 @@ public class Character {
 
     private final String id;
     private final String name;
-    private final Inventory inventory; // композиция: живёт и умирает с персонажем
+    private final Inventory inventory;
 
     private int strength = 10;
     private int agility = 10;
     private int intelligence = 10;
 
-    // Агрегация: источники способностей существуют независимо
     private final List<AbilitySource> abilitySources = new ArrayList<>();
 
     public Character(String id, String name) {
@@ -28,10 +27,8 @@ public class Character {
         }
         this.id = id;
         this.name = name;
-        this.inventory = new Inventory(); // создаём внутри — композиция
+        this.inventory = new Inventory();
     }
-
-    // --- Методы-прокси для работы с инвентарём ---
 
     public void addItem(Item item, int quantity) {
         inventory.addItem(item, quantity);
@@ -49,8 +46,6 @@ public class Character {
         System.out.println("Инвентарь персонажа '" + name + "':");
         inventory.printInventory();
     }
-
-    // --- Характеристики ---
 
     public int getStrength() {
         return strength;
@@ -76,8 +71,6 @@ public class Character {
         this.intelligence = intelligence;
     }
 
-    // --- AbilitySource (агрегация) ---
-
     public void addAbilitySource(AbilitySource source) {
         if (source != null) {
             abilitySources.add(source);
@@ -88,9 +81,6 @@ public class Character {
         abilitySources.remove(source);
     }
 
-    /**
-     * Суммарный бонус способностей от всех источников.
-     */
     public double getTotalAbilityPower() {
         double total = 0;
         for (AbilitySource src : abilitySources) {
@@ -98,8 +88,6 @@ public class Character {
         }
         return total;
     }
-
-    // --- Геттеры ---
 
     public String getId() {
         return id;

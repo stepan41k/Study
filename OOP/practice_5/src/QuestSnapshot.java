@@ -38,7 +38,6 @@ public class QuestSnapshot {
         this.intelligence = character.getIntelligence();
         this.status = Status.STARTED;
 
-        // Копируем данные инвентаря — не ссылки!
         List<QuestItemSnapshot> snapshots = new ArrayList<>();
         for (InventoryItem invItem : character.getInventory().getItems()) {
             snapshots.add(new QuestItemSnapshot(
@@ -99,6 +98,6 @@ public class QuestSnapshot {
                 System.out.println("  " + snap);
             }
         }
-        System.out.println("================================");
+        System.out.println("");
     }
 }

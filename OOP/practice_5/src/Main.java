@@ -29,14 +29,13 @@ public class Main {
         System.out.println();
         System.out.println("===== 4. Применяем эффекты предметов =====");
 
-        // Эффекты — агрегация: одну политику можно использовать для разных персонажей
         EffectPolicy noEffect = new NoEffect();
         EffectPolicy strengthBuff = new BuffEffect("strength", 1.0);
         EffectPolicy intelligenceBuff = new BuffEffect("intelligence", 1.5);
 
-        noEffect.apply(hero, shield);        // щит не даёт эффекта
-        strengthBuff.apply(hero, potion);     // зелье силы: +10 к силе
-        intelligenceBuff.apply(hero, ring);   // кольцо мудрости: +45 к интеллекту
+        noEffect.apply(hero, shield);        
+        strengthBuff.apply(hero, potion);  
+        intelligenceBuff.apply(hero, ring);
 
         System.out.println();
         System.out.println("Персонаж после эффектов:");
@@ -49,10 +48,10 @@ public class Main {
 
         System.out.println();
         System.out.println("===== 6. Изменяем инвентарь и характеристики ПОСЛЕ снимка =====");
-        hero.removeItem("item_03");               // убираем зелья
-        hero.addItem(sword, 2);                    // добавляем ещё 2 меча
-        hero.setStrength(hero.getStrength() + 50); // накидываем силу
-        hero.changeQuantity("item_04", 5);         // 5 колец
+        hero.removeItem("item_03");               
+        hero.addItem(sword, 2);                   
+        hero.setStrength(hero.getStrength() + 50);
+        hero.changeQuantity("item_04", 5);         
 
         System.out.println();
         System.out.println("Персонаж ПОСЛЕ изменений:");
@@ -81,12 +80,11 @@ public class Main {
         System.out.println("Финальное состояние персонажа:");
         System.out.println(hero);
 
-        // Демонстрация: один и тот же эффект можно применить к другому персонажу
         System.out.println();
         System.out.println("===== Бонус: эффект применяется к другому персонажу =====");
         Character mage = new Character("char_02", "Гэндальф");
         mage.addItem(ring, 2);
-        intelligenceBuff.apply(mage, ring); // тот же BuffEffect
+        intelligenceBuff.apply(mage, ring);
         System.out.println(mage);
     }
 }
