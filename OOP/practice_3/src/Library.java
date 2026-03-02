@@ -36,7 +36,7 @@ public class Library<T> {
                 System.out.println(item.toString());
             }
         }
-        System.out.println("----------------------------------");
+        System.out.println("");
     }
 
     public List<T> getItems() {

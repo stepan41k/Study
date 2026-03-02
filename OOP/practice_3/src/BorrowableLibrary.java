@@ -65,6 +65,6 @@ public class BorrowableLibrary<T> extends Library<T> {
             boolean isBorrowed = borrowedItems.getOrDefault(item, false);
             System.out.println("Статус: " + (isBorrowed ? "В аренде" : "Доступен"));
         }
-        System.out.println("------------------------");
+        System.out.println("");
     }
 }
