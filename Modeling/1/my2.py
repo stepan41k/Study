@@ -4,7 +4,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-N = [100, 200, 300, 400, 500]
+#N = [100, 200, 300, 400, 500]
+
+try:
+    print("Введите значения N через пробел:")
+    user_input = input()
+    N = [int(x) for x in user_input.split()]
+    
+    if not N:
+        print("Ввод пуст, используются значения по умолчанию.")
+        N = [100, 200, 300, 400, 500]
+except ValueError:
+    print("Ошибка ввода! Используются значения по умолчанию.")
+    N = [100, 200, 300, 400, 500]
 
 Mx = 1.1 * math.log(11)
 Dx = 11 - (Mx**2)
@@ -19,7 +31,7 @@ def f(x):
 
 
 def F(x):
-    return np.where(x < 1, 0, np.where(x > 2, 1, 1.1 * (1 - 1/x)))
+    return np.where(x < 1, 0, np.where(x > 11, 1, 1.1 * (1 - 1/x)))
 
 
 def simulate(N):

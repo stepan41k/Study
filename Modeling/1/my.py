@@ -4,13 +4,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-N = [120, 240, 360, 480, 600]
+#N = [120, 240, 360, 480, 600]
+
+try:
+    print("Введите значения N через пробел:")
+    user_input = input()
+    N = [int(x) for x in user_input.split()]
+    
+    if not N:
+        print("Ввод пуст, используются значения по умолчанию.")
+        N = [100, 200, 300, 400, 500]
+except ValueError:
+    print("Ошибка ввода! Используются значения по умолчанию.")
+    N = [100, 200, 300, 400, 500]
 
 Mx = math.pi/4 - math.log(2)/2
-Dx = 0.041
+Dx = (math.pi**2/16 - 0.91596 + math.pi/4 * math.log(2)) - (Mx**2)
 
-print(f"Теоретическое Mx = {Mx:.6f}")
-print(f"Теоретическое Dx = {Dx:.6f}")
+print(f"Mx = {Mx:.6f}")
+print(f"Dx = {Dx:.6f}")
 
 
 # Функции
