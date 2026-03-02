@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-N = 1100000
-q = 16
+N = 100000
+q = 10
 
 count = 4
-x = [-27, -13, 31, 34]
-p = [0.1, 0.1, 0.5, 0.3]
+x = [-22, -9, -6, 21]
+p = [0.5, 0.2, 0.1, 0.2]
 
 r = np.random.rand(N)
 
@@ -29,20 +29,17 @@ Dx = sum([(x[i] ** 2) * p[i] for i in range(count)]) - Mx**2
 
 m = 1 / N * sum([k[i] * x[i] for i in range(count)])
 g = 1 / N * sum([k[i] * (x[i] ** 2) for i in range(count)]) - m**2
-# Таблица характеристик
+
 df1 = pd.DataFrame(
     [[N, Mx, m, abs(Mx - m), Dx, g, abs(Dx - g)]],
     columns=["N", "Mx", "m", "|Mx-m|", "Dx", "g", "|Dx-g|"],
 )
 
-# Таблица k
 df2 = pd.DataFrame([k], columns=[f"k{i}" for i in range(count)])
 
-# Вывод таблиц
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.axis("off")
 
-# Таблица 1
 table1 = ax.table(
     cellText=df1.round(6).values,
     colLabels=df1.columns,
@@ -53,7 +50,6 @@ table1.auto_set_font_size(False)
 table1.set_fontsize(10)
 table1.scale(1.2, 1.5)
 
-# Таблица 2 (k)
 table2 = ax.table(
     cellText=df2.values, colLabels=df2.columns, loc="lower center", cellLoc="center"
 )

@@ -5,11 +5,11 @@ import numpy as np
 import pandas as pd
 
 N = 100000
-q = 16
+q = 10
 
 count = 4
-x = [-2, -1, 4, 23]
-p = [0.1, 0.1, 0.7, 0.1]
+x = [1, 5, 6, 23]
+p = [0.2, 0.2, 0.1, 0.5]
 
 r = np.random.rand(N)
 
