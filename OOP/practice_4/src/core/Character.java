@@ -1,4 +1,4 @@
-package src.core;
+package core;
 
 public class Character {
 
@@ -14,7 +14,7 @@ public class Character {
 
     public Character(String name, int health, int damage, int level) {
         this.name = name;
-        this.health = health;
+        this.health = health;   
         this.damage = damage;
         this.level = level;
         this.alive = true;
