@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Иконка временной метки на траектории -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+    <path
+        android:fillColor="#7FFF00"
+        android:pathData="M8,2 A6,6 0 1,0 8,14 A6,6 0 1,0 8,2 Z" />
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M8,4 A4,4 0 1,0 8,12 A4,4 0 1,0 8,4 Z" />
+    <path
+        android:fillColor="#7FFF00"
+        android:pathData="M8,6 A2,2 0 1,0 8,10 A2,2 0 1,0 8,6 Z" />
+</vector>

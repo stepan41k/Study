@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Satellite Tracker</string>
+    <string name="btn_track">▶ Отслеживать</string>
+    <string name="btn_stop">⏹ Остановить</string>
+    <string name="btn_trajectory">🛤 Траектория</string>
+    <string name="btn_center">🎯 Центр</string>
+    <string name="loading_tle">Загрузка TLE данных…</string>
+    <string name="computing_trajectory">Вычисление траектории…</string>
+    <string name="error_no_satellite">Спутник не выбран</string>
+    <string name="error_tle_parse">Ошибка парсинга TLE</string>
+    <string name="error_network">Ошибка сети</string>
+</resources>

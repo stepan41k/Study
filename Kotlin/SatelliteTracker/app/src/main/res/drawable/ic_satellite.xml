@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Иконка спутника для маркера на карте -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Корпус спутника -->
+    <path
+        android:fillColor="#00D4FF"
+        android:pathData="M20,18 L28,18 L28,30 L20,30 Z" />
+
+    <!-- Левая солнечная панель -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M8,16 L18,16 L18,22 L8,22 Z" />
+    <path
+        android:fillColor="#FFA500"
+        android:pathData="M8,23 L18,23 L18,29 L8,29 Z" />
+
+    <!-- Правая солнечная панель -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M30,16 L40,16 L40,22 L30,22 Z" />
+    <path
+        android:fillColor="#FFA500"
+        android:pathData="M30,23 L40,23 L40,29 L30,29 Z" />
+
+    <!-- Антенна -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M24,18 L24,12" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,10 A3,3 0 1,0 27,10 A3,3 0 1,0 21,10" />
+
+    <!-- Соединительные штанги панелей -->
+    <path
+        android:strokeColor="#888888"
+        android:strokeWidth="1.5"
+        android:pathData="M18,19 L20,19" />
+    <path
+        android:strokeColor="#888888"
+        android:strokeWidth="1.5"
+        android:pathData="M28,19 L30,19" />
+    <path
+        android:strokeColor="#888888"
+        android:strokeWidth="1.5"
+        android:pathData="M18,26 L20,26" />
+    <path
+        android:strokeColor="#888888"
+        android:strokeWidth="1.5"
+        android:pathData="M28,26 L30,26" />
+</vector>
