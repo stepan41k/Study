@@ -37,14 +37,11 @@ df1 = pd.DataFrame(
     columns=["N", "Mx", "m", "|Mx-m|", "Dx", "g", "|Dx-g|"],
 )
 
-# Таблица k
 df2 = pd.DataFrame([k], columns=[f"k{i}" for i in range(count)])
 
-# Вывод таблиц
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.axis("off")
 
-# Таблица 1
 table1 = ax.table(
     cellText=df1.round(6).values,
     colLabels=df1.columns,
@@ -55,7 +52,6 @@ table1.auto_set_font_size(False)
 table1.set_fontsize(10)
 table1.scale(1.2, 1.5)
 
-# Таблица 2 (k)
 table2 = ax.table(
     cellText=df2.values, colLabels=df2.columns, loc="lower center", cellLoc="center"
 )
