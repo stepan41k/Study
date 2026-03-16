@@ -7,7 +7,6 @@ import numpy as np
 
 def calculate():
     try:
-        # 1. Получаем входные данные
         a = float(entry_a.get())
         b = float(entry_b.get())
         N = int(entry_n.get())
@@ -36,7 +35,6 @@ def calculate():
         delta1 = math.fabs(Mx - m)
         delta2 = math.fabs(Dx - g)
 
-        # 4. Обновление полей d1 и d2
         entry_d1.config(state="normal")
         entry_d1.delete(0, tk.END)
         entry_d1.insert(0, f"{delta1:.4f}")
@@ -49,12 +47,11 @@ def calculate():
 
         display_values = x[:20]
         table_str = ""
-        for i in range(4):  # 4 строки
+        for i in range(4): 
             row = display_values[i * 5 : (i + 1) * 5]
             row_str = "  ".join([f"{val:8.4f}" for val in row])
             table_str += row_str + "\n\n"
 
-        # 6. Вывод в текстовое поле
         txt_table.delete(1.0, tk.END)
         txt_table.insert(tk.END, table_str)
 
@@ -62,16 +59,13 @@ def calculate():
         messagebox.showerror("Ошибка", "Введите корректные числа в поля a, b, N")
 
 
-# Создание окна
 root = tk.Tk()
 root.title("Лабораторная работа")
 root.geometry("550x600")
 
-# Блок параметров
 input_frame = tk.LabelFrame(root, text=" Параметры ", padx=10, pady=10)
 input_frame.pack(padx=20, pady=10, fill="x")
 
-# Сетка для a, b, N
 tk.Label(input_frame, text="a").grid(row=0, column=0, sticky="e")
 entry_a = tk.Entry(input_frame, width=10)
 entry_a.insert(0, "0")
@@ -87,7 +81,6 @@ entry_n = tk.Entry(input_frame, width=10)
 entry_n.insert(0, "20")
 entry_n.grid(row=0, column=5, padx=5, pady=5)
 
-# Сетка для d1, d2 (только для чтения)
 tk.Label(input_frame, text="Δ1").grid(row=1, column=0, sticky="e")
 entry_d1 = tk.Entry(
     input_frame, width=15, state="readonly", readonlybackground="#e0e0e0"
@@ -100,7 +93,6 @@ entry_d2 = tk.Entry(
 )
 entry_d2.grid(row=1, column=4, columnspan=2, padx=5, pady=10, sticky="w")
 
-# Кнопка
 btn_calc = tk.Button(
     root,
     text="вычислить",
@@ -111,7 +103,6 @@ btn_calc = tk.Button(
 )
 btn_calc.pack(pady=10)
 
-# Поле вывода таблицы
 tk.Label(root, text="Таблица значений:").pack()
 txt_table = tk.Text(
     root, height=10, width=50, font=("Courier New", 11), padx=10, pady=10

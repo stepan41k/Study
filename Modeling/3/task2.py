@@ -7,7 +7,6 @@ import numpy as np
 
 def calculate():
     try:
-        # 1. Получаем входные данные
         λ = float(entry_a.get())
         N = int(entry_n.get())
 
@@ -49,7 +48,6 @@ def calculate():
             row_str = "  ".join([f"{val:8.4f}" for val in row])
             table_str += row_str + "\n\n"
 
-        # 6. Вывод в текстовое поле
         txt_table.delete(1.0, tk.END)
         txt_table.insert(tk.END, table_str)
 
