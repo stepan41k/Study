@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-N = 100000
+N = 1000
 q = 10
 
 count = 4
@@ -53,7 +53,7 @@ table1.set_fontsize(10)
 table1.scale(1.2, 1.5)
 
 table2 = ax.table(
-    cellText=df2.values, colLabels=df2.columns, loc="lower center", cellLoc="center"
+    cellText=df2.values, colLabels=df2.columns, loc="center", cellLoc="center"
 )
 table2.auto_set_font_size(False)
 table2.set_fontsize(10)
