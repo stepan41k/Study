@@ -6,13 +6,13 @@ public class Item {
 
     public Item(String id, String name, double baseValue) {
         if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("ID предмета не может быть пустым или null.");
+            throw new IllegalArgumentException("ID предмета не может быть пустым или null");
         }
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Имя предмета не может быть пустым или null.");
+            throw new IllegalArgumentException("Имя предмета не может быть пустым или null");
         }
         if (baseValue < 0) {
-            throw new IllegalArgumentException("Базовое значение не может быть отрицательным.");
+            throw new IllegalArgumentException("Базовое значение не может быть отрицательным");
         }
         this.id = id;
         this.name = name;

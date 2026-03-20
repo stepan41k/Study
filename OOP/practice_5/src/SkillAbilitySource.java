@@ -4,7 +4,7 @@ public class SkillAbilitySource implements AbilitySource {
 
     public SkillAbilitySource(double coefficient) {
         this.coefficient = coefficient;
-    }
+    }   
 
     @Override
     public double getAbilityPower(Character character) {

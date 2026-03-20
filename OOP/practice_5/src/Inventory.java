@@ -2,21 +2,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Inventory — инвентарь персонажа.
- * Владеет объектами InventoryItem (композиция): создаёт и удаляет их сам.
- * Наружу возвращает только неизменяемое представление списка.
+/*
+    владеет объектами InventoryItem (композиция), создаёт и удаляет их сам.
+    наружу возвращает только неизменяемое представление списка.
  */
+
 public class Inventory {
 
     private final List<InventoryItem> items = new ArrayList<>();
 
     public void addItem(Item item, int quantity) {
         if (item == null) {
-            throw new IllegalArgumentException("Item не может быть null.");
+            throw new IllegalArgumentException("Item не может быть null");
         }
         if (quantity < 1) {
-            throw new IllegalArgumentException("Количество должно быть >= 1.");
+            throw new IllegalArgumentException("Количество должно быть >= 1");
         }
 
         for (InventoryItem inv : items) {
@@ -25,7 +25,7 @@ public class Inventory {
                 return;
             }
         }
-        // Inventory сам создаёт InventoryItem — это композиция
+      
         items.add(new InventoryItem(item, quantity));
     }
 
@@ -45,7 +45,7 @@ public class Inventory {
                 return;
             }
         }
-        System.out.println("Предмет с id '" + itemId + "' не найден в инвентаре.");
+        System.out.println("Предмет с id '" + itemId + "' не найден в инвентаре");
     }
 
     public double getTotalValue() {
@@ -62,12 +62,12 @@ public class Inventory {
 
     public void printInventory() {
         if (items.isEmpty()) {
-            System.out.println("  Инвентарь пуст.");
+            System.out.println("Инвентарь пуст");
             return;
         }
         for (InventoryItem inv : items) {
             System.out.println("  " + inv);
         }
-        System.out.println("  Общая ценность: " + getTotalValue());
+        System.out.println("Общая ценность: " + getTotalValue());
     }
 }

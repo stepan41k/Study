@@ -24,10 +24,10 @@ public class QuestSnapshot {
 
     public QuestSnapshot(String questId, Character character) {
         if (questId == null || questId.isBlank()) {
-            throw new IllegalArgumentException("Quest ID не может быть пустым.");
+            throw new IllegalArgumentException("Quest ID не может быть пустым");
         }
         if (character == null) {
-            throw new IllegalArgumentException("Character не может быть null.");
+            throw new IllegalArgumentException("Character не может быть null");
         }
 
         this.questId = questId;
@@ -86,7 +86,7 @@ public class QuestSnapshot {
     }
 
     public void printSnapshot() {
-        System.out.println("=== Снимок квеста '" + questId + "' ===");
+        System.out.println("Снимок квеста '" + questId + "'");
         System.out.println("Персонаж: " + characterName + " (id=" + characterId + ")");
         System.out.println("Статус: " + status);
         System.out.println("Характеристики: STR=" + strength + ", AGI=" + agility + ", INT=" + intelligence);
