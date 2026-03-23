@@ -1,9 +1,12 @@
 package unischedule;
 
-import unischedule.logic.ScheduleManager;
-import unischedule.model.*;
-import unischedule.ui.MainFrame;
 import javax.swing.SwingUtilities;
+
+import unischedule.logic.ScheduleManager;
+import unischedule.model.Classroom;
+import unischedule.model.StudentGroup;
+import unischedule.model.Teacher;
+import unischedule.ui.MainFrame;
 
 public class Main {
     public static void main(String[] args) {
