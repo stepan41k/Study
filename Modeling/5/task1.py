@@ -68,7 +68,7 @@ def calculate():
 # Создание окна
 root = tk.Tk()
 root.title("Лабораторная работа")
-root.geometry("550x600")
+root.geometry("800x800")
 
 # Блок параметров
 input_frame = tk.LabelFrame(root, text=" Параметры ", padx=10, pady=10)
