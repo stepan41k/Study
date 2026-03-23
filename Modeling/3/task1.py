@@ -61,7 +61,7 @@ def calculate():
 
 root = tk.Tk()
 root.title("Лабораторная работа")
-root.geometry("550x600")
+root.geometry("800x800")
 
 input_frame = tk.LabelFrame(root, text=" Параметры ", padx=10, pady=10)
 input_frame.pack(padx=20, pady=10, fill="x")
