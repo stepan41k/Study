@@ -7,14 +7,8 @@ import numpy as np
 
 def calculate():
     try:
-        # 1. Получаем входные данные
-        a = float(entry_a.get())
-        σ = float(entry_σ.get())
+        λ = float(entry_a.get())
         N = int(entry_n.get())
-
-        if σ <= 0:
-            messagebox.showerror("Ошибка", "Параметр 'σ' должен быть больше 0")
-            return
 
         if N < 20:
             messagebox.showwarning(
@@ -24,17 +18,14 @@ def calculate():
             entry_n.delete(0, tk.END)
             entry_n.insert(0, "20")
 
-        Mx = a
-        Dx = σ * σ
+        r = np.random.rand(N)
+        x = -np.log(1 - r) / λ
 
-        x = []
-        for _ in range(N):
-            xi = np.random.rand(12).sum() - 6
-            x.append(a + xi * σ)
+        Mx = 1 / λ
+        Dx = 1 / λ**2
 
-        m = np.sum(x) / N
-        squared_deviations = (x - m) ** 2
-        g = np.sum(squared_deviations) / N
+        m = np.mean(x)
+        g = np.var(x)
 
         delta1 = math.fabs(Mx - m)
         delta2 = math.fabs(Dx - g)
@@ -57,7 +48,6 @@ def calculate():
             row_str = "  ".join([f"{val:8.4f}" for val in row])
             table_str += row_str + "\n\n"
 
-        # 6. Вывод в текстовое поле
         txt_table.delete(1.0, tk.END)
         txt_table.insert(tk.END, table_str)
 
@@ -68,22 +58,17 @@ def calculate():
 # Создание окна
 root = tk.Tk()
 root.title("Лабораторная работа")
-root.geometry("550x600")
+root.geometry("425x600")
 
 # Блок параметров
 input_frame = tk.LabelFrame(root, text=" Параметры ", padx=10, pady=10)
 input_frame.pack(padx=20, pady=10, fill="x")
 
 # Сетка для a, b, N
-tk.Label(input_frame, text="a").grid(row=0, column=0, sticky="e")
+tk.Label(input_frame, text="λ").grid(row=0, column=0, sticky="e")
 entry_a = tk.Entry(input_frame, width=10)
 entry_a.insert(0, "0")
 entry_a.grid(row=0, column=1, padx=5, pady=5)
-
-tk.Label(input_frame, text="σ").grid(row=0, column=2, sticky="e")
-entry_σ = tk.Entry(input_frame, width=10)
-entry_σ.insert(0, "1")
-entry_σ.grid(row=0, column=3, padx=5, pady=5)
 
 tk.Label(input_frame, text="N").grid(row=0, column=4, sticky="e")
 entry_n = tk.Entry(input_frame, width=10)
@@ -117,7 +102,7 @@ btn_calc.pack(pady=10)
 # Поле вывода таблицы
 tk.Label(root, text="Таблица значений:").pack()
 txt_table = tk.Text(
-    root, height=10, width=50, font=("Courier New", 11), padx=10, pady=10
+    root, height=10, width=55, font=("Courier New", 11), padx=10, pady=10
 )
 txt_table.pack(pady=10)
 
