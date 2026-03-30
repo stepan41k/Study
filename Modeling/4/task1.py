@@ -9,7 +9,11 @@ def calculate():
     try:
         λ = float(entry_a.get())
         N = int(entry_n.get())
-
+        
+        if λ <= 0:
+            messagebox.showerror("Ошибка", "λ должно быть больше нуля")
+            return
+        
         if N < 20:
             messagebox.showwarning(
                 "Внимание", "Для таблицы 4x5 нужно N не менее 20. Установлено N=20."
