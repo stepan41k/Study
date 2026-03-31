@@ -1,91 +1,161 @@
 package unischedule.ui;
 
-import unischedule.logic.ConflictException;
-import unischedule.logic.ScheduleManager;
-import unischedule.model.*;
-
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import unischedule.logic.*;
+import unischedule.model.*;
 
-/**
- * Диалоговое окно для создания нового занятия.
- * Реализует логику сбора данных и вызова проверки конфликтов.
- */
 public class LessonDialog extends JDialog {
+
     private final ScheduleManager manager;
     private final MainFrame parentFrame;
+    private final int editIndex;
 
-    // Компоненты формы
     private JTextField txtSubject;
     private JComboBox<String> comboType;
     private JComboBox<Teacher> comboTeacher;
     private JComboBox<StudentGroup> comboGroup;
     private JComboBox<Classroom> comboRoom;
     private JComboBox<String> comboDay;
-    private JComboBox<Integer> comboSlot;
+
+    private JList<String> listTime;
+    private JTextField txtComment;
 
     public LessonDialog(MainFrame owner, ScheduleManager manager) {
-        super(owner, "Добавление занятия", true); // true = модальное окно
+        this(owner, manager, null, -1);
+    }
+
+    public LessonDialog(
+        MainFrame owner,
+        ScheduleManager manager,
+        Lesson existingLesson,
+        int index
+    ) {
+        super(
+            owner,
+            (index == -1 ? "Добавление" : "Редактирование") + " занятия",
+            true
+        );
         this.parentFrame = owner;
         this.manager = manager;
+        this.editIndex = index;
 
         initUI();
+
+        if (existingLesson != null) {
+            fillFields(existingLesson);
+        }
+    }
+
+    private void fillFields(Lesson lesson) {
+        txtSubject.setText(lesson.getSubject());
+        comboType.setSelectedItem(lesson.getLessonType());
+        comboTeacher.setSelectedItem(lesson.getTeacher());
+        comboGroup.setSelectedItem(lesson.getGroup());
+        comboRoom.setSelectedItem(lesson.getClassroom());
+        comboDay.setSelectedItem(lesson.getTimeSlot().getDay());
+
+        // Выделяем несколько часов в списке
+        java.util.List<String> times = lesson.getTimeSlot().getStartTimes();
+        int[] indices = new int[times.size()];
+        ListModel<String> model = listTime.getModel();
+        for (int i = 0; i < times.size(); i++) {
+            for (int j = 0; j < model.getSize(); j++) {
+                if (model.getElementAt(j).equals(times.get(i))) {
+                    indices[i] = j;
+                }
+            }
+        }
+        listTime.setSelectedIndices(indices);
+        txtComment.setText(lesson.getComment());
     }
 
     private void initUI() {
         setLayout(new BorderLayout());
-        setSize(450, 450);
+        setSize(550, 500);
         setLocationRelativeTo(parentFrame);
 
-        // Панель формы с полями ввода
-        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 15));
+        JPanel formPanel = new JPanel(new GridLayout(8, 2, 10, 10));
         formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // 1. Предмет
         formPanel.add(new JLabel("Название дисциплины:"));
         txtSubject = new JTextField();
         formPanel.add(txtSubject);
 
-        // 2. Тип занятия (Демонстрация полиморфизма)
         formPanel.add(new JLabel("Тип занятия:"));
-        comboType = new JComboBox<>(new String[]{"Лекция", "Семинар"});
+        comboType = new JComboBox<>(
+            new String[] { "Лекция", "Практика", "Лабораторная" }
+        );
         formPanel.add(comboType);
 
-        // 3. Преподаватель (Берем список из менеджера)
         formPanel.add(new JLabel("Преподаватель:"));
-        comboTeacher = new JComboBox<>(manager.getTeachers().toArray(new Teacher[0]));
+        comboTeacher = new JComboBox<>(
+            manager.getTeachers().toArray(new Teacher[0])
+        );
         formPanel.add(comboTeacher);
 
-        // 4. Группа
         formPanel.add(new JLabel("Учебная группа:"));
-        comboGroup = new JComboBox<>(manager.getGroups().toArray(new StudentGroup[0]));
+        comboGroup = new JComboBox<>(
+            manager.getGroups().toArray(new StudentGroup[0])
+        );
         formPanel.add(comboGroup);
 
-        // 5. Аудитория
         formPanel.add(new JLabel("Аудитория:"));
-        comboRoom = new JComboBox<>(manager.getClassrooms().toArray(new Classroom[0]));
+        comboRoom = new JComboBox<>(
+            manager.getClassrooms().toArray(new Classroom[0])
+        );
         formPanel.add(comboRoom);
 
-        // 6. День недели
         formPanel.add(new JLabel("День недели:"));
-        comboDay = new JComboBox<>(new String[]{"Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"});
+        comboDay = new JComboBox<>(
+            new String[] {
+                "Понедельник",
+                "Вторник",
+                "Среда",
+                "Четверг",
+                "Пятница",
+                "Суббота",
+            }
+        );
         formPanel.add(comboDay);
 
-        // 7. Номер пары
-        formPanel.add(new JLabel("Номер пары (время):"));
-        comboSlot = new JComboBox<>(new Integer[]{1, 2, 3, 4, 5, 6});
-        formPanel.add(comboSlot);
+        // 7. Время начала
+        formPanel.add(new JLabel("Выберите время:"));
+        String[] hours = {
+            "09:00",
+            "10:00",
+            "11:00",
+            "12:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00",
+            "17:00",
+            "18:00",
+            "19:00",
+            "20:00",
+            "21:00",
+        };
+        listTime = new JList<>(hours);
+        listTime.setSelectionMode(
+            ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+        );
+        formPanel.add(new JScrollPane(listTime));
+
+        formPanel.add(new JLabel("Комментарий:"));
+        txtComment = new JTextField();
+        formPanel.add(txtComment);
 
         add(formPanel, BorderLayout.CENTER);
 
-        // Панель кнопок
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBorder(new EmptyBorder(0, 0, 15, 15));
-
         JButton btnCancel = new JButton("Отмена");
         JButton btnSave = new JButton("Сохранить");
-        btnSave.setFont(new Font("SansSerif", Font.BOLD, 12));
 
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> handleSave());
@@ -95,51 +165,81 @@ public class LessonDialog extends JDialog {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    /**
-     * Логика сохранения занятия с проверкой на конфликты.
-     */
+
+    private LocalDate getDateFromDayName(String dayName) {
+        java.time.DayOfWeek targetDay;
+        switch (dayName) {
+            case "Понедельник":
+                targetDay = java.time.DayOfWeek.MONDAY;
+                break;
+            case "Вторник":
+                targetDay = java.time.DayOfWeek.TUESDAY;
+                break;
+            case "Среда":
+                targetDay = java.time.DayOfWeek.WEDNESDAY;
+                break;
+            case "Четверг":
+                targetDay = java.time.DayOfWeek.THURSDAY;
+                break;
+            case "Пятница":
+                targetDay = java.time.DayOfWeek.FRIDAY;
+                break;
+            case "Суббота":
+                targetDay = java.time.DayOfWeek.SATURDAY;
+                break;
+            default:
+                targetDay = java.time.DayOfWeek.MONDAY;
+        }
+        return LocalDate.now().with(
+            java.time.temporal.TemporalAdjusters.nextOrSame(targetDay)
+        );
+    }
+
     private void handleSave() {
         String subject = txtSubject.getText().trim();
-        
-        // Валидация пустого ввода
         if (subject.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Введите название предмета!", "Ошибка", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Введите название дисциплины!");
             return;
         }
-
-        // Получение выбранных данных
+    
+        java.util.List<String> selectedTimes = listTime.getSelectedValuesList();
+        if (selectedTimes.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Выберите хотя бы один час занятия (используйте Ctrl для выбора нескольких)!");
+            return;
+        }
+    
         String type = (String) comboType.getSelectedItem();
         Teacher teacher = (Teacher) comboTeacher.getSelectedItem();
         StudentGroup group = (StudentGroup) comboGroup.getSelectedItem();
         Classroom room = (Classroom) comboRoom.getSelectedItem();
-        String day = (String) comboDay.getSelectedItem();
-        Integer slotNumber = (Integer) comboSlot.getSelectedItem();
-
-        // Создание объекта времени
-        TimeSlot timeSlot = new TimeSlot(day, slotNumber);
-
-        // Использование полиморфизма при создании объекта Lesson
+        String dayName = (String) comboDay.getSelectedItem();
+    
+        LocalDate date = getDateFromDayName(dayName);
+    
+        TimeSlot ts = new TimeSlot(dayName, selectedTimes);
+        
         Lesson newLesson;
         if ("Лекция".equals(type)) {
-            newLesson = new Lecture(subject, teacher, group, room, timeSlot);
+            newLesson = new Lecture(subject, teacher, group, room, ts, date);
+        } else if ("Практика".equals(type)) {
+            newLesson = new Practice(subject, teacher, group, room, ts, date);
         } else {
-            newLesson = new Seminar(subject, teacher, group, room, timeSlot);
+            newLesson = new Labaratory(subject, teacher, group, room, ts, date);
         }
-
+        
+        newLesson.setComment(txtComment.getText().trim());
+    
         try {
-            // Пытаемся добавить занятие через бизнес-логику
-            manager.addLesson(newLesson);
+            if (editIndex == -1) {
+                manager.addLesson(newLesson);
+            } else {
+                manager.updateLesson(editIndex, newLesson);
+            }
             
-            // Если конфликтов нет — закрываем окно
+            parentFrame.refreshTable();
             dispose();
         } catch (ConflictException ex) {
-            // Вывод сообщения об ошибке (Требование №8)
-            JOptionPane.showMessageDialog(
-                this, 
-                "Невозможно добавить занятие:\n" + ex.getMessage(), 
-                "Конфликт расписания", 
-                JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Конфликт", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
